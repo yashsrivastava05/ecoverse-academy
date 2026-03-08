@@ -142,10 +142,15 @@ export default function DashboardPage() {
     }
   }, [profile?.id]);
 
+  // Adjusted rank: include seeded bots
+  const SEEDED_POINTS = [1850, 1340, 890, 420];
+  const botsAbove = SEEDED_POINTS.filter(p => p > (profile?.eco_points ?? 0)).length;
+  const adjustedRank = (dashboard.rank ?? 999) + botsAbove;
+
   // Count-up values — must be called unconditionally (before any early return)
   const ecoCount = useCountUp(profile?.eco_points ?? 0, 1200, 500);
   const streakCount = useCountUp(profile?.streak_days ?? 0, 800, 620);
-  const rankCount = useCountUp(dashboard.rank, 600, 740);
+  const rankCount = useCountUp(adjustedRank, 600, 740);
 
   const baseTransition = mounted ? snappyTransition : { duration: 0.5 };
 
@@ -170,7 +175,7 @@ export default function DashboardPage() {
 
   // Determine ecosystem health from eco_points
   const ecosystemHealth = Math.min(100, Math.round((profile.eco_points / 10000) * 100));
-  const treesPlanted = Math.floor(profile.eco_points / 200);
+  const treesPlanted = dashboard.treesPlanted;
   const co2Saved = Math.round(profile.eco_points * 0.011);
 
   // Get submission status for a mission
@@ -202,7 +207,7 @@ export default function DashboardPage() {
     if (b.name === 'On Fire' && profile.streak_days >= 7) earned = true;
     if (b.name === 'Water Guard' && profile.eco_points >= 500) earned = true;
     if (b.name === 'Tree Hugger' && profile.eco_points >= 1200) earned = true;
-    if (b.name === 'Top 10' && dashboard.rank <= 10) earned = true;
+    if (b.name === 'Top 10' && dashboard.realUserCount >= 10 && dashboard.rank <= 10) earned = true;
     if (b.name === 'Recycler' && profile.eco_points >= 300) earned = true;
     return { ...b, earned };
   });
@@ -347,7 +352,7 @@ export default function DashboardPage() {
               { emoji: '🌿', label: 'EcoPoints', value: ecoCount.toLocaleString(), trend: `↑ +${totalWeeklyPts} this week`, trendColor: '#40916C', borderClass: 'border-l-primary', numColor: '#1B4332' },
               { emoji: '🔥', label: 'Day Streak', value: String(streakCount), trend: profile.streak_days >= 7 ? '🏆 Personal best!' : 'Keep going!', trendColor: '#D97706', borderClass: 'border-l-sun-gold', numColor: '#C2410C' },
               { emoji: '⭐', label: 'Level', value: `Lv ${levelInfo.level}`, trend: `${levelInfo.title}`, trendColor: '#40916C', borderClass: 'border-l-sky-blue', numColor: '#1B4332' },
-              { emoji: '🏆', label: 'Rank', value: `#${rankCount}`, trend: dashboard.rank <= 10 ? '🔥 Top 10!' : `Out of ${dashboard.leaderboard.length}+ users`, trendColor: '#4338CA', borderClass: 'border-l-lavender', numColor: '#4338CA' },
+              { emoji: '🏆', label: 'Rank', value: `#${rankCount}`, trend: adjustedRank <= 10 ? '🔥 Top 10!' : `Out of ${dashboard.leaderboard.length + SEEDED_POINTS.length}+ users`, trendColor: '#4338CA', borderClass: 'border-l-lavender', numColor: '#4338CA' },
             ].map((card, i) => (
               <motion.div
                 key={card.label}
