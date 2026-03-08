@@ -125,7 +125,7 @@ function TwemojiImg({ emoji, className, style }: { emoji: string; className?: st
 }
 
 // ── Snappy hover transition (used as base transition after entrance) ──
-const snappyTransition = { duration: 0.15, ease: 'easeOut' };
+const snappyTransition = { duration: 0.15, ease: 'easeOut' as const };
 
 export default function DashboardPage() {
   const ecoCount = useCountUp(user.ecoPoints, 1200, 500);
