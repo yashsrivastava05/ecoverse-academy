@@ -16,20 +16,6 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-function AppRoutes() {
-  return (
-    <AppLayout>
-      <Routes>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/missions" element={<MissionsPage />} />
-        <Route path="/learn" element={<LearnPage />} />
-        <Route path="/leaderboard" element={<LeaderboardPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-      </Routes>
-    </AppLayout>
-  );
-}
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -41,11 +27,11 @@ const App = () => (
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/onboarding" element={<OnboardingPage />} />
-          <Route path="/dashboard" element={<AppRoutes />} />
-          <Route path="/missions" element={<AppRoutes />} />
-          <Route path="/learn" element={<AppRoutes />} />
-          <Route path="/leaderboard" element={<AppRoutes />} />
-          <Route path="/profile" element={<AppRoutes />} />
+          <Route path="/dashboard" element={<AppLayout><DashboardPage /></AppLayout>} />
+          <Route path="/missions" element={<AppLayout><MissionsPage /></AppLayout>} />
+          <Route path="/learn" element={<AppLayout><LearnPage /></AppLayout>} />
+          <Route path="/leaderboard" element={<AppLayout><LeaderboardPage /></AppLayout>} />
+          <Route path="/profile" element={<AppLayout><ProfilePage /></AppLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
