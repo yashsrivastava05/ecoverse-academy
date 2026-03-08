@@ -173,6 +173,34 @@ export function useDashboardData() {
     }
   };
 
+  // Trees planted (approved planting missions)
+  const treesPlantedQuery = useQuery({
+    queryKey: ['trees-planted', userId],
+    queryFn: async () => {
+      if (!userId) return 0;
+      const { data } = await supabase
+        .from('mission_submissions')
+        .select('id, missions!inner(category)')
+        .eq('user_id', userId)
+        .eq('status', 'approved')
+        .eq('missions.category', 'planting');
+      return data?.length ?? 0;
+    },
+    enabled: !!userId,
+  });
+
+  // Real user count (for badge logic)
+  const realUserCountQuery = useQuery({
+    queryKey: ['real-user-count'],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+      return count ?? 0;
+    },
+    enabled: !!userId,
+  });
+
   // Streak update
   const updateStreak = async () => {
     if (!userId) return;
