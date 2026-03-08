@@ -207,7 +207,7 @@ export default function DashboardPage() {
     if (b.name === 'On Fire' && profile.streak_days >= 7) earned = true;
     if (b.name === 'Water Guard' && profile.eco_points >= 500) earned = true;
     if (b.name === 'Tree Hugger' && profile.eco_points >= 1200) earned = true;
-    if (b.name === 'Top 10' && dashboard.rank <= 10) earned = true;
+    if (b.name === 'Top 10' && dashboard.realUserCount >= 10 && dashboard.rank <= 10) earned = true;
     if (b.name === 'Recycler' && profile.eco_points >= 300) earned = true;
     return { ...b, earned };
   });
