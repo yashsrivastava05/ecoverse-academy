@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import confetti from 'canvas-confetti';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 const AVATARS = ['🧑‍🌾', '👩‍🔬', '🧑‍🏫', '🌿', '🦊', '🐢'];
 const INTERESTS = [
@@ -16,6 +18,7 @@ const INTERESTS = [
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
+  const { user, refreshProfile } = useAuth();
   const [step, setStep] = useState(0);
   const [avatar, setAvatar] = useState('');
   const [interests, setInterests] = useState<string[]>([]);
@@ -25,7 +28,15 @@ export default function OnboardingPage() {
     setInterests(prev => prev.includes(id) ? prev.filter(i => i !== id) : prev.length < 6 ? [...prev, id] : prev);
   };
 
-  const finish = () => {
+  const finish = async () => {
+    if (user) {
+      await supabase.from('profiles').update({
+        avatar_emoji: avatar,
+        interests,
+        daily_goal: goal,
+      }).eq('id', user.id);
+      await refreshProfile();
+    }
     confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#40916C', '#F4A261', '#48CAE4', '#52B788'] });
     setTimeout(() => navigate('/dashboard'), 2000);
   };
