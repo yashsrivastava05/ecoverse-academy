@@ -142,10 +142,15 @@ export default function DashboardPage() {
     }
   }, [profile?.id]);
 
+  // Adjusted rank: include seeded bots
+  const SEEDED_POINTS = [1850, 1340, 890, 420];
+  const botsAbove = SEEDED_POINTS.filter(p => p > (profile?.eco_points ?? 0)).length;
+  const adjustedRank = (dashboard.rank ?? 999) + botsAbove;
+
   // Count-up values — must be called unconditionally (before any early return)
   const ecoCount = useCountUp(profile?.eco_points ?? 0, 1200, 500);
   const streakCount = useCountUp(profile?.streak_days ?? 0, 800, 620);
-  const rankCount = useCountUp(dashboard.rank, 600, 740);
+  const rankCount = useCountUp(adjustedRank, 600, 740);
 
   const baseTransition = mounted ? snappyTransition : { duration: 0.5 };
 
