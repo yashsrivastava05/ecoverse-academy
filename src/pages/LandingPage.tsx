@@ -1,14 +1,13 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Leaf, Target, TreePine, Trophy, BookOpen, Sparkles } from 'lucide-react';
+import { ArrowRight, Leaf, Target, TreePine, Trophy, BookOpen, Sparkles, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true });
   const [count, setCount] = useState(0);
-
   useEffect(() => {
     if (!inView) return;
     const duration = 2000;
@@ -20,172 +19,252 @@ function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: str
     };
     requestAnimationFrame(animate);
   }, [inView, target]);
-
-  return <span ref={ref} className="font-mono-stat font-bold text-primary glow-text">{count.toLocaleString()}{suffix}</span>;
+  return <span ref={ref} className="font-mono-stat font-bold text-jungle-bright">{count.toLocaleString()}{suffix}</span>;
 }
 
-function FeatureCard({ icon, title, desc, delay }: { icon: React.ReactNode; title: string; desc: string; delay: number }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-50px' });
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay }}
-      className="group rounded-2xl border border-border bg-card/60 backdrop-blur-sm p-6 hover:border-primary/40 transition-all animate-breathe"
-      style={{ animationDelay: `${delay * 2}s` }}
-    >
-      <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center text-primary mb-4 group-hover:glow-sm transition-shadow">
-        {icon}
-      </div>
-      <h3 className="font-heading font-bold text-foreground text-lg mb-2">{title}</h3>
-      <p className="text-muted-foreground text-sm leading-relaxed">{desc}</p>
-    </motion.div>
-  );
-}
+const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.08 } } };
+const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-mesh overflow-hidden">
+    <div className="min-h-screen bg-background overflow-hidden">
       {/* Nav */}
       <motion.nav
-        initial={{ y: -60, opacity: 0 }}
+        initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="sticky top-0 z-50 flex items-center justify-between px-6 h-16 border-b border-border/30 bg-card/60 backdrop-blur-xl"
+        transition={{ duration: 0.3 }}
+        className="sticky top-0 z-50 flex items-center justify-between px-6 md:px-12 h-16 border-b border-border/30 bg-card/80 backdrop-blur-xl"
       >
         <div className="flex items-center gap-2">
-          <span className="text-2xl">🌍</span>
-          <span className="font-display font-bold text-primary text-xl">EcoQuest</span>
+          <span className="text-xl">🌿</span>
+          <span className="font-display font-bold text-jungle-deep text-xl">EcoQuest</span>
         </div>
-        <div className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
+        <div className="hidden md:flex items-center gap-8 text-sm font-heading font-semibold text-muted-foreground">
           <a href="#features" className="hover:text-foreground transition-colors">Features</a>
-          <a href="#stats" className="hover:text-foreground transition-colors">Impact</a>
+          <a href="#how-it-works" className="hover:text-foreground transition-colors">How It Works</a>
+          <a href="#testimonials" className="hover:text-foreground transition-colors">Stories</a>
         </div>
         <div className="flex items-center gap-3">
           <Link to="/login">
-            <Button variant="ghost" size="sm">Log In</Button>
+            <Button variant="ghost" size="sm" className="font-heading font-semibold text-jungle-deep">Log In</Button>
           </Link>
           <Link to="/signup">
-            <Button size="sm" className="glow-sm">Sign Up Free</Button>
+            <Button size="sm" className="font-heading font-bold rounded-lg">Sign Up Free</Button>
           </Link>
         </div>
       </motion.nav>
 
       {/* Hero */}
-      <section className="relative flex flex-col items-center justify-center text-center px-6 py-24 md:py-36">
-        {/* Background particles */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-2 h-2 rounded-full bg-primary/20"
-              style={{ left: `${10 + i * 12}%`, top: `${20 + (i % 3) * 25}%` }}
-              animate={{ y: [0, -30, 0], opacity: [0.2, 0.5, 0.2] }}
-              transition={{ duration: 4 + i, repeat: Infinity, delay: i * 0.5 }}
-            />
-          ))}
+      <section className="relative px-6 md:px-12 py-20 md:py-28 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <motion.div className="lg:col-span-7" variants={stagger} initial="hidden" animate="visible">
+            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full bg-jungle-pale px-4 py-1.5 text-sm font-heading font-bold text-jungle-bright mb-6">
+              <Leaf className="w-4 h-4" /> 1M+ Students Worldwide
+            </motion.div>
+            <motion.h1 variants={fadeUp} className="font-display font-black text-5xl md:text-7xl text-jungle-deep leading-[1.05] tracking-tight mb-6">
+              Learning that<br />grows with you.
+            </motion.h1>
+            <motion.p variants={fadeUp} className="text-lg text-muted-foreground max-w-lg leading-relaxed mb-8">
+              Complete eco missions. Grow your forest. Save the planet.
+              EcoQuest makes environmental learning genuinely addictive.
+            </motion.p>
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-start gap-3 mb-8">
+              <Link to="/signup">
+                <Button size="lg" className="font-heading font-bold text-base px-7 py-6 rounded-xl shadow-card">
+                  Start Your Quest <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
+              <a href="#how-it-works">
+                <Button variant="outline" size="lg" className="font-heading font-bold text-base px-7 py-6 rounded-xl border-jungle-mid text-jungle-deep">
+                  See How It Works
+                </Button>
+              </a>
+            </motion.div>
+            <motion.div variants={fadeUp} className="flex items-center gap-3">
+              <div className="flex -space-x-2">
+                {['🧑‍🌾', '👩‍🔬', '🧑‍🏫'].map((a, i) => (
+                  <div key={i} className="w-8 h-8 rounded-full bg-jungle-pale border-2 border-card flex items-center justify-center text-sm">{a}</div>
+                ))}
+              </div>
+              <p className="text-sm text-muted-foreground">Join <strong className="text-foreground">50,000+</strong> students already questing</p>
+            </motion.div>
+          </motion.div>
+          <motion.div
+            className="lg:col-span-5 relative"
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
+          >
+            <div className="absolute -inset-10 bg-jungle-pale rounded-full opacity-30 blur-3xl" />
+            <div className="relative bg-card rounded-3xl shadow-float p-4 border border-border" style={{ transform: 'perspective(1000px) rotateY(-6deg) rotateX(2deg)' }}>
+              <div className="bg-gradient-warm rounded-2xl p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🌿</span>
+                    <span className="font-display font-bold text-jungle-deep text-sm">Dashboard</span>
+                  </div>
+                  <div className="bg-jungle-pale rounded-full px-3 py-1 text-xs font-mono-stat font-bold text-jungle-bright">2,750 pts</div>
+                </div>
+                <div className="bg-bg-dark-panel rounded-xl p-3 aspect-video flex items-center justify-center">
+                  <span className="text-4xl">🌳🦌🦋</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-card rounded-xl p-3 shadow-card border-l-4 border-l-jungle-bright">
+                    <p className="text-[10px] font-label text-muted-foreground">Level</p>
+                    <p className="font-mono-stat font-bold text-foreground">5</p>
+                  </div>
+                  <div className="bg-card rounded-xl p-3 shadow-card border-l-4 border-l-sun-gold">
+                    <p className="text-[10px] font-label text-muted-foreground">Streak</p>
+                    <p className="font-mono-stat font-bold text-foreground">12🔥</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-        >
-          <div className="inline-flex items-center gap-2 rounded-full bg-accent border border-primary/30 px-4 py-1.5 text-sm font-medium text-primary mb-8">
-            <Sparkles className="w-4 h-4" />
-            <span>The future of environmental education</span>
-          </div>
-          <h1 className="font-display font-extrabold text-5xl md:text-7xl lg:text-8xl text-foreground leading-[0.95] tracking-tighter mb-6">
-            Learn. Act.<br />
-            <span className="text-primary glow-text">Save the Planet.</span>
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-            The world's first gamified eco-learning platform for students.
-            Complete real-world missions, grow your virtual ecosystem, and compete with peers.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center gap-4">
-            <Link to="/signup">
-              <Button size="lg" className="glow-md text-lg px-8 py-6 font-heading font-bold">
-                Start Your Journey <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </Link>
-            <a href="#features">
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6 font-heading border-border hover:border-primary/40">
-                Explore Features
-              </Button>
-            </a>
-          </div>
-        </motion.div>
       </section>
 
-      {/* Stats */}
-      <section id="stats" className="py-16 px-6">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          {[
-            { value: 50000, suffix: '+', label: 'Students' },
-            { value: 2000000, suffix: '+', label: 'EcoPoints Earned' },
-            { value: 10000, suffix: '+', label: 'Trees Planted' },
-          ].map((s, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.15 }}
-              className="p-6"
-            >
-              <p className="text-4xl md:text-5xl mb-2">
-                <AnimatedCounter target={s.value} suffix={s.suffix} />
-              </p>
-              <p className="text-sm uppercase tracking-widest text-muted-foreground font-display">{s.label}</p>
-            </motion.div>
+      {/* Social Proof Ticker */}
+      <section className="bg-bg-dark-panel py-5 overflow-hidden">
+        <p className="text-center text-xs font-label text-jungle-pale/70 mb-3">Trusted by students at schools across 30+ countries</p>
+        <div className="flex animate-marquee whitespace-nowrap">
+          {[...Array(2)].map((_, rep) => (
+            <div key={rep} className="flex items-center gap-12 px-6">
+              {['Green Valley Academy', 'Sunrise International', 'Nordic Nature School', 'Cambridge Eco Hub', 'Tokyo Green Academy', 'Berlin Sustainability School'].map(name => (
+                <span key={`${rep}-${name}`} className="text-sm font-heading font-bold text-jungle-pale/50">{name}</span>
+              ))}
+            </div>
           ))}
         </div>
       </section>
 
       {/* Features */}
-      <section id="features" className="py-20 px-6">
+      <section id="features" className="py-20 px-6 md:px-12">
         <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="font-display font-bold text-3xl md:text-4xl text-foreground mb-4">
-              Everything you need to go <span className="text-primary">green</span>
+          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mb-16">
+            <h2 className="font-display font-bold text-3xl md:text-4xl text-jungle-deep mb-4">
+              Everything you need to go green
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">Gamified learning, real-world missions, and a growing virtual ecosystem that evolves with your impact.</p>
+            <p className="text-muted-foreground max-w-xl mx-auto">Gamified learning, real-world missions, and a growing virtual ecosystem.</p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <FeatureCard icon={<Target className="w-6 h-6" />} title="Eco Missions" desc="Complete real-world sustainability challenges. Plant trees, reduce waste, save water, and earn points." delay={0} />
-            <FeatureCard icon={<TreePine className="w-6 h-6" />} title="Virtual Ecosystem" desc="Watch your personal ecosystem evolve from barren land to a thriving planet as you earn EcoPoints." delay={0.1} />
-            <FeatureCard icon={<Trophy className="w-6 h-6" />} title="Leaderboards" desc="Compete with students and schools worldwide. Climb the ranks and earn legendary badges." delay={0.2} />
-            <FeatureCard icon={<BookOpen className="w-6 h-6" />} title="Learn & Quiz" desc="Interactive lessons, quizzes, and mini-games covering climate, energy, water, and biodiversity." delay={0.3} />
-            <FeatureCard icon={<Sparkles className="w-6 h-6" />} title="AI Eco Tutor" desc="Ask EcoBot anything about the environment. Get personalized mission recommendations and carbon footprint analysis." delay={0.4} />
-            <FeatureCard icon={<Leaf className="w-6 h-6" />} title="Real Rewards" desc="Redeem EcoPoints for certificates, eco-products, scholarships, and more from partner organizations." delay={0.5} />
+            {[
+              { icon: <TreePine className="w-6 h-6" />, title: 'Ecosystem Growth', desc: 'Watch your virtual forest evolve from barren land to a thriving paradise as you earn EcoPoints.', color: 'bg-jungle-pale text-jungle-bright' },
+              { icon: <Target className="w-6 h-6" />, title: 'Daily Missions', desc: 'Complete real-world sustainability challenges. Plant trees, reduce waste, save water.', color: 'bg-sky-blue/10 text-sky-blue' },
+              { icon: <Sparkles className="w-6 h-6" />, title: 'AI EcoTutor', desc: 'Get personalized mission recommendations and carbon footprint analysis from our AI.', color: 'bg-lavender/10 text-lavender' },
+              { icon: <Trophy className="w-6 h-6" />, title: 'Leaderboards', desc: 'Compete with students and schools worldwide. Climb the ranks and earn legendary badges.', color: 'bg-sun-gold/10 text-sun-gold' },
+              { icon: <BookOpen className="w-6 h-6" />, title: 'Learn & Quiz', desc: 'Interactive lessons, quizzes, and mini-games covering climate, energy, and biodiversity.', color: 'bg-coral/10 text-coral' },
+              { icon: <Leaf className="w-6 h-6" />, title: 'Real Rewards', desc: 'Redeem EcoPoints for certificates, eco-products, and scholarships.', color: 'bg-earth-warm/10 text-earth-warm' },
+            ].map((f, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                whileHover={{ y: -4, boxShadow: 'var(--shadow-hover)' }}
+                whileTap={{ scale: 0.97 }}
+                className="rounded-2xl bg-card shadow-card p-6 border border-border/50 transition-all cursor-default"
+              >
+                <div className={`w-12 h-12 rounded-xl ${f.color} flex items-center justify-center mb-4`}>
+                  {f.icon}
+                </div>
+                <h3 className="font-heading font-bold text-foreground text-lg mb-2">{f.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>
+                <a href="#" className="text-sm font-heading font-semibold text-primary mt-3 inline-flex items-center gap-1 hover:underline">
+                  Learn more <ArrowRight className="w-3 h-3" />
+                </a>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section id="how-it-works" className="py-20 px-6 md:px-12 bg-bg-elevated">
+        <div className="max-w-5xl mx-auto">
+          <motion.h2 initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="font-display font-bold text-3xl text-jungle-deep text-center mb-16">
+            How It Works
+          </motion.h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+            {/* Dotted connector line */}
+            <div className="hidden md:block absolute top-12 left-[12.5%] right-[12.5%] border-t-2 border-dashed border-jungle-light/30" />
+            {[
+              { num: '01', title: 'Sign Up', desc: 'Create your account and choose your interests.' },
+              { num: '02', title: 'Complete Missions', desc: 'Take on real-world eco challenges.' },
+              { num: '03', title: 'Grow Your Forest', desc: 'Watch your ecosystem evolve.' },
+              { num: '04', title: 'Earn Rewards', desc: 'Redeem points for real-world prizes.' },
+            ].map((step, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className={`text-center rounded-2xl p-6 ${i % 2 === 0 ? 'bg-card shadow-card' : 'bg-jungle-pale'}`}
+              >
+                <div className="font-display font-black text-4xl text-jungle-light/30 mb-3">{step.num}</div>
+                <h3 className="font-heading font-bold text-foreground text-lg mb-2">{step.title}</h3>
+                <p className="text-sm text-muted-foreground">{step.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section id="testimonials" className="py-20 px-6 md:px-12">
+        <div className="max-w-6xl mx-auto">
+          <motion.h2 initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="font-display font-bold text-3xl text-jungle-deep text-center mb-16">
+            What students are saying
+          </motion.h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { name: 'Priya S.', school: 'Sunrise International', quote: 'EcoQuest made me actually care about the environment. The missions are so fun!', rotate: 'rotate-1' },
+              { name: 'Erik L.', school: 'Nordic Nature School', quote: 'Watching my ecosystem grow from a tiny seed to a forest is incredibly satisfying.', rotate: '-rotate-1' },
+              { name: 'Maya C.', school: 'Green Valley Academy', quote: 'The leaderboard keeps me motivated every day. Best school app ever!', rotate: 'rotate-1' },
+            ].map((t, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className={`rounded-2xl bg-card shadow-card p-6 border border-border/50 ${t.rotate}`}
+              >
+                <div className="flex items-center gap-1 mb-3">
+                  {Array(5).fill(0).map((_, j) => <Star key={j} className="w-4 h-4 fill-sun-gold text-sun-gold" />)}
+                </div>
+                <p className="font-heading italic text-foreground mb-4">"{t.quote}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-jungle-pale flex items-center justify-center text-lg font-bold text-jungle-deep">{t.name[0]}</div>
+                  <div>
+                    <p className="font-heading font-bold text-sm text-foreground">{t.name}</p>
+                    <p className="text-xs text-muted-foreground">{t.school}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-6">
+      <section className="py-20 px-6 md:px-12">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="max-w-3xl mx-auto text-center rounded-3xl border border-primary/30 bg-accent/50 backdrop-blur-sm p-12 glow-sm"
+          className="max-w-3xl mx-auto text-center rounded-3xl bg-jungle-pale p-12 shadow-card"
         >
-          <h2 className="font-display font-bold text-3xl md:text-4xl text-foreground mb-4">
+          <h2 className="font-display font-bold text-3xl md:text-4xl text-jungle-deep mb-4">
             Ready to save the planet?
           </h2>
           <p className="text-muted-foreground mb-8 max-w-md mx-auto">
             Join thousands of students making a real difference. Your journey starts with a single seed.
           </p>
           <Link to="/signup">
-            <Button size="lg" className="glow-md text-lg px-10 py-6 font-heading font-bold">
+            <Button size="lg" className="font-heading font-bold text-lg px-10 py-6 rounded-xl shadow-card">
               Start as a 🌱 Seed <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </Link>
@@ -193,16 +272,34 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/30 py-8 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">🌍</span>
-            <span className="font-display font-bold text-foreground">EcoQuest</span>
+      <footer className="bg-bg-dark-panel py-12 px-6 md:px-12">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-2xl">🌿</span>
+                <span className="font-display font-bold text-xl" style={{ color: 'hsl(var(--bg-elevated))' }}>EcoQuest</span>
+              </div>
+              <p className="text-sm" style={{ color: 'hsl(var(--jungle-light))' }}>Making environmental education genuinely addictive.</p>
+            </div>
+            {[
+              { title: 'Product', links: ['Features', 'Missions', 'Leaderboard', 'Rewards'] },
+              { title: 'Learn', links: ['Climate Change', 'Biodiversity', 'Energy', 'Water'] },
+              { title: 'Company', links: ['About', 'Blog', 'Careers', 'Contact'] },
+            ].map(group => (
+              <div key={group.title}>
+                <h4 className="font-heading font-bold text-sm mb-3" style={{ color: 'hsl(var(--bg-elevated))' }}>{group.title}</h4>
+                <ul className="space-y-2">
+                  {group.links.map(link => (
+                    <li key={link}><a href="#" className="text-sm hover:underline" style={{ color: 'hsl(var(--jungle-light))' }}>{link}</a></li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
-          <p>© 2026 EcoQuest. Growing a greener future, one mission at a time.</p>
-          <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 3, repeat: Infinity }}>
-            <Leaf className="w-5 h-5 text-primary" />
-          </motion.div>
+          <div className="border-t pt-6" style={{ borderColor: 'hsl(var(--jungle-mid))' }}>
+            <p className="text-center text-sm" style={{ color: 'hsl(var(--jungle-light))' }}>© 2025 EcoQuest — Making Earth Cool Again 🌍</p>
+          </div>
         </div>
       </footer>
     </div>

@@ -4,61 +4,65 @@
 
 @layer base {
   :root {
-    /* Bioluminescent Jungle Theme */
-    --background: 210 47% 3%;
-    --foreground: 0 0% 95%;
+    /* Warm Jungle Theme */
+    --background: 36 33% 93%;
+    --foreground: 153 45% 15%;
 
-    --card: 215 50% 8%;
-    --card-foreground: 0 0% 95%;
+    --card: 0 0% 100%;
+    --card-foreground: 153 45% 15%;
 
-    --popover: 215 50% 8%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 153 45% 15%;
 
-    --primary: 153 100% 50%;
-    --primary-foreground: 210 47% 3%;
+    --primary: 153 35% 48%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 145 63% 42%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 153 45% 15%;
+    --secondary-foreground: 36 33% 93%;
 
-    --muted: 215 30% 14%;
-    --muted-foreground: 210 10% 60%;
+    --muted: 36 20% 90%;
+    --muted-foreground: 220 9% 46%;
 
-    --accent: 153 40% 20%;
-    --accent-foreground: 153 100% 50%;
+    --accent: 140 49% 90%;
+    --accent-foreground: 153 45% 15%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 15 70% 47%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 215 30% 16%;
-    --input: 215 30% 16%;
-    --ring: 153 100% 50%;
+    --border: 153 15% 82%;
+    --input: 153 15% 82%;
+    --ring: 153 35% 48%;
 
-    --radius: 1rem;
+    --radius: 1.25rem;
 
-    /* Extended Bioluminescent Palette */
-    --void-black: 210 47% 3%;
-    --deep-forest: 215 50% 8%;
-    --canopy-dark: 150 30% 9%;
+    /* Extended Warm Jungle Palette */
+    --jungle-deep: 153 45% 15%;
+    --jungle-mid: 153 40% 30%;
+    --jungle-bright: 153 35% 48%;
+    --jungle-light: 153 35% 60%;
+    --jungle-pale: 140 49% 90%;
 
-    --glow-green: 153 100% 50%;
-    --moss-green: 145 63% 42%;
-    --sage: 152 40% 52%;
-    --forest-mid: 153 42% 30%;
+    --sun-gold: 26 88% 67%;
+    --sky-blue: 193 72% 59%;
+    --coral: 15 70% 47%;
+    --lavender: 261 95% 70%;
+    --earth-warm: 20 50% 38%;
 
-    --amber-sun: 41 100% 50%;
-    --sky-biolume: 195 74% 59%;
-    --coral-bloom: 0 100% 71%;
-    --violet-dusk: 270 61% 46%;
-    --earth-warm: 25 56% 40%;
+    --bg-elevated: 36 50% 96%;
+    --bg-dark-panel: 140 30% 13%;
 
-    --sidebar-background: 150 30% 9%;
-    --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 153 100% 50%;
-    --sidebar-primary-foreground: 210 47% 3%;
-    --sidebar-accent: 153 40% 15%;
-    --sidebar-accent-foreground: 153 100% 50%;
-    --sidebar-border: 215 30% 16%;
-    --sidebar-ring: 153 100% 50%;
+    --shadow-card: 0 2px 12px rgba(27,67,50,0.08), 0 1px 3px rgba(27,67,50,0.05);
+    --shadow-hover: 0 8px 30px rgba(27,67,50,0.15), 0 2px 8px rgba(27,67,50,0.1);
+    --shadow-float: 0 20px 60px rgba(27,67,50,0.2);
+
+    --sidebar-background: 140 30% 13%;
+    --sidebar-foreground: 36 33% 93%;
+    --sidebar-primary: 153 35% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 153 35% 20%;
+    --sidebar-accent-foreground: 153 35% 48%;
+    --sidebar-border: 153 20% 22%;
+    --sidebar-ring: 153 35% 48%;
   }
 }
 
@@ -78,7 +82,7 @@
 
 @layer utilities {
   .font-display {
-    font-family: 'Syne', sans-serif;
+    font-family: 'Cabinet Grotesk', 'Syne', sans-serif;
   }
   .font-heading {
     font-family: 'Nunito', sans-serif;
@@ -87,44 +91,32 @@
     font-family: 'DM Sans', sans-serif;
   }
   .font-mono-stat {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Syne Mono', 'Syne', monospace;
+  }
+  .font-label {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-size: 0.6875rem;
   }
 
-  .glow-sm {
-    box-shadow: 0 0 8px hsl(153 100% 50% / 0.4);
+  .shadow-card {
+    box-shadow: var(--shadow-card);
   }
-  .glow-md {
-    box-shadow: 0 0 20px hsl(153 100% 50% / 0.5), 0 0 40px hsl(153 100% 50% / 0.2);
+  .shadow-hover {
+    box-shadow: var(--shadow-hover);
   }
-  .glow-lg {
-    box-shadow: 0 0 30px hsl(153 100% 50% / 0.6), 0 0 80px hsl(153 100% 50% / 0.3);
-  }
-  .glow-sun {
-    box-shadow: 0 0 20px hsl(41 100% 50% / 0.6), 0 0 60px hsl(41 100% 50% / 0.2);
-  }
-  .glow-text {
-    text-shadow: 0 0 20px hsl(153 100% 50% / 0.6), 0 0 40px hsl(153 100% 50% / 0.3);
-  }
-  .glow-text-sun {
-    text-shadow: 0 0 20px hsl(41 100% 50% / 0.6), 0 0 40px hsl(41 100% 50% / 0.3);
+  .shadow-float {
+    box-shadow: var(--shadow-float);
   }
 
-  .bg-gradient-mesh {
+  .bg-gradient-warm {
     background:
-      radial-gradient(ellipse at 20% 50%, hsl(153 100% 50% / 0.06) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 20%, hsl(195 74% 59% / 0.05) 0%, transparent 50%),
-      radial-gradient(ellipse at 50% 80%, hsl(270 61% 46% / 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 20% 50%, hsl(140 49% 90% / 0.4) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, hsl(36 33% 93% / 0.6) 0%, transparent 50%),
       hsl(var(--background));
   }
-
-  .glass {
-    @apply bg-card/60 backdrop-blur-xl border border-border/50;
-  }
-}
-
-@keyframes breathe {
-  0%, 100% { box-shadow: 0 0 15px hsl(153 100% 50% / 0.08); }
-  50% { box-shadow: 0 0 25px hsl(153 100% 50% / 0.2); }
 }
 
 @keyframes float {
@@ -133,8 +125,8 @@
 }
 
 @keyframes sway {
-  0%, 100% { transform: rotate(-2deg); }
-  50% { transform: rotate(2deg); }
+  0%, 100% { transform: rotate(-1deg); }
+  50% { transform: rotate(1deg); }
 }
 
 @keyframes flow {
@@ -142,19 +134,14 @@
   100% { transform: translateX(-50%); }
 }
 
-@keyframes twinkle {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
-@keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-.animate-breathe {
-  animation: breathe 4s ease-in-out infinite;
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
 }
 
 .animate-float {
@@ -162,18 +149,18 @@
 }
 
 .animate-sway {
-  animation: sway 4s ease-in-out infinite;
+  animation: sway 3s ease-in-out infinite;
 }
 
 .animate-flow {
   animation: flow 8s linear infinite;
 }
 
-.animate-twinkle {
-  animation: twinkle 3s ease-in-out infinite;
+.animate-marquee {
+  animation: marquee 20s linear infinite;
 }
 
-.animate-gradient-shift {
-  background-size: 200% 200%;
-  animation: gradient-shift 15s ease infinite;
+.animate-shimmer {
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
 }
