@@ -352,7 +352,7 @@ export default function DashboardPage() {
               { emoji: '🌿', label: 'EcoPoints', value: ecoCount.toLocaleString(), trend: `↑ +${totalWeeklyPts} this week`, trendColor: '#40916C', borderClass: 'border-l-primary', numColor: '#1B4332' },
               { emoji: '🔥', label: 'Day Streak', value: String(streakCount), trend: profile.streak_days >= 7 ? '🏆 Personal best!' : 'Keep going!', trendColor: '#D97706', borderClass: 'border-l-sun-gold', numColor: '#C2410C' },
               { emoji: '⭐', label: 'Level', value: `Lv ${levelInfo.level}`, trend: `${levelInfo.title}`, trendColor: '#40916C', borderClass: 'border-l-sky-blue', numColor: '#1B4332' },
-              { emoji: '🏆', label: 'Rank', value: `#${rankCount}`, trend: dashboard.rank <= 10 ? '🔥 Top 10!' : `Out of ${dashboard.leaderboard.length}+ users`, trendColor: '#4338CA', borderClass: 'border-l-lavender', numColor: '#4338CA' },
+              { emoji: '🏆', label: 'Rank', value: `#${rankCount}`, trend: adjustedRank <= 10 ? '🔥 Top 10!' : `Out of ${dashboard.leaderboard.length + SEEDED_POINTS.length}+ users`, trendColor: '#4338CA', borderClass: 'border-l-lavender', numColor: '#4338CA' },
             ].map((card, i) => (
               <motion.div
                 key={card.label}
