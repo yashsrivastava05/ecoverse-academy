@@ -14,16 +14,259 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      daily_points: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          points_earned: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          points_earned?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          points_earned?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mission_submissions: {
+        Row: {
+          id: string
+          location_coords: Json | null
+          mission_id: string
+          notes: string | null
+          photo_url: string | null
+          reviewed_at: string | null
+          status: Database["public"]["Enums"]["mission_status"]
+          submitted_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          location_coords?: Json | null
+          mission_id: string
+          notes?: string | null
+          photo_url?: string | null
+          reviewed_at?: string | null
+          status?: Database["public"]["Enums"]["mission_status"]
+          submitted_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          location_coords?: Json | null
+          mission_id?: string
+          notes?: string | null
+          photo_url?: string | null
+          reviewed_at?: string | null
+          status?: Database["public"]["Enums"]["mission_status"]
+          submitted_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_submissions_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      missions: {
+        Row: {
+          category: Database["public"]["Enums"]["mission_category"]
+          created_at: string
+          description: string
+          difficulty: Database["public"]["Enums"]["mission_difficulty"]
+          eco_points_reward: number
+          icon: string
+          id: string
+          is_active: boolean
+          requires_location: boolean
+          requires_photo: boolean
+          steps: string[] | null
+          title: string
+          xp_reward: number
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["mission_category"]
+          created_at?: string
+          description: string
+          difficulty: Database["public"]["Enums"]["mission_difficulty"]
+          eco_points_reward?: number
+          icon?: string
+          id?: string
+          is_active?: boolean
+          requires_location?: boolean
+          requires_photo?: boolean
+          steps?: string[] | null
+          title: string
+          xp_reward?: number
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["mission_category"]
+          created_at?: string
+          description?: string
+          difficulty?: Database["public"]["Enums"]["mission_difficulty"]
+          eco_points_reward?: number
+          icon?: string
+          id?: string
+          is_active?: boolean
+          requires_location?: boolean
+          requires_photo?: boolean
+          steps?: string[] | null
+          title?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_read: boolean
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          title: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_emoji: string
+          created_at: string
+          daily_goal: number
+          eco_points: number
+          full_name: string
+          id: string
+          interests: string[] | null
+          last_active_date: string | null
+          school_name: string | null
+          streak_days: number
+          updated_at: string
+        }
+        Insert: {
+          avatar_emoji?: string
+          created_at?: string
+          daily_goal?: number
+          eco_points?: number
+          full_name?: string
+          id: string
+          interests?: string[] | null
+          last_active_date?: string | null
+          school_name?: string | null
+          streak_days?: number
+          updated_at?: string
+        }
+        Update: {
+          avatar_emoji?: string
+          created_at?: string
+          daily_goal?: number
+          eco_points?: number
+          full_name?: string
+          id?: string
+          interests?: string[] | null
+          last_active_date?: string | null
+          school_name?: string | null
+          streak_days?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      auto_approve_pending_submissions: {
+        Args: { p_user_id: string }
+        Returns: {
+          id: string
+          location_coords: Json | null
+          mission_id: string
+          notes: string | null
+          photo_url: string | null
+          reviewed_at: string | null
+          status: Database["public"]["Enums"]["mission_status"]
+          submitted_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "mission_submissions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      update_streak: {
+        Args: { p_user_id: string }
+        Returns: {
+          avatar_emoji: string
+          created_at: string
+          daily_goal: number
+          eco_points: number
+          full_name: string
+          id: string
+          interests: string[] | null
+          last_active_date: string | null
+          school_name: string | null
+          streak_days: number
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
-      [_ in never]: never
+      mission_category:
+        | "planting"
+        | "waste"
+        | "energy"
+        | "water"
+        | "transport"
+        | "biodiversity"
+        | "campus"
+      mission_difficulty: "easy" | "medium" | "hard"
+      mission_status:
+        | "available"
+        | "in_progress"
+        | "pending"
+        | "approved"
+        | "rejected"
+      notification_type: "mission" | "badge" | "streak" | "reward" | "level_up"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +393,25 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      mission_category: [
+        "planting",
+        "waste",
+        "energy",
+        "water",
+        "transport",
+        "biodiversity",
+        "campus",
+      ],
+      mission_difficulty: ["easy", "medium", "hard"],
+      mission_status: [
+        "available",
+        "in_progress",
+        "pending",
+        "approved",
+        "rejected",
+      ],
+      notification_type: ["mission", "badge", "streak", "reward", "level_up"],
+    },
   },
 } as const
