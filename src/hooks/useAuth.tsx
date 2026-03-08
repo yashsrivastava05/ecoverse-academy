@@ -12,6 +12,8 @@ interface Profile {
   interests: string[];
   daily_goal: number;
   school_name: string;
+  city: string;
+  created_at: string;
 }
 
 interface AuthContextType {
