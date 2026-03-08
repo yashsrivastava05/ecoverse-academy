@@ -301,30 +301,39 @@ export default function DashboardPage() {
               <Link to="/leaderboard" className="text-xs text-primary font-heading font-bold hover:underline transition-colors duration-[120ms]">View All →</Link>
             </div>
             <div className="space-y-1">
-              {dashboard.leaderboard.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Be the first on the leaderboard! 🌱</p>
-              ) : dashboard.leaderboard.map((row: any, idx: number) => {
-                const rank = idx + 1;
-                const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}`;
-                const isYou = row.id === user?.id;
-                return (
-                  <div
-                    key={row.id}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 hover:bg-accent/30 ${isYou ? 'border-l-[4px] border-primary' : ''}`}
-                    style={isYou ? { background: 'linear-gradient(90deg, #f0fff4, #ffffff)' } : {}}
-                  >
-                    <span className="text-sm w-6 text-center font-heading font-black">{medal}</span>
-                    <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-base">{row.avatar_emoji}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`font-heading text-xs text-foreground truncate ${isYou ? 'font-extrabold' : 'font-bold'}`}>
-                        {isYou ? `${row.full_name} (You)` : row.full_name}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground truncate">{row.school_name || 'EcoQuest'}</p>
+              {(() => {
+                const SEEDED_USERS = [
+                  { id: 'bot-maya', full_name: '🌍 EcoBot Maya', avatar_emoji: '🌍', eco_points: 1850, school_name: 'Green Valley Academy' },
+                  { id: 'bot-arjun', full_name: '🌱 EcoBot Arjun', avatar_emoji: '🌱', eco_points: 1340, school_name: 'Sunrise School' },
+                  { id: 'bot-priya', full_name: '🌿 EcoBot Priya', avatar_emoji: '🌿', eco_points: 890, school_name: 'Nordic Nature School' },
+                  { id: 'bot-sam', full_name: '🌳 EcoBot Sam', avatar_emoji: '🌳', eco_points: 420, school_name: 'EcoQuest Community' },
+                ];
+                const combined = [...dashboard.leaderboard, ...SEEDED_USERS.filter(s => !dashboard.leaderboard.some((r: any) => r.id === s.id))];
+                const sorted = combined.sort((a: any, b: any) => b.eco_points - a.eco_points).slice(0, 5);
+                return sorted.map((row: any, idx: number) => {
+                  const rank = idx + 1;
+                  const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}`;
+                  const isYou = row.id === user?.id;
+                  const isBot = row.id?.startsWith('bot-');
+                  return (
+                    <div
+                      key={row.id}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 hover:bg-accent/30 ${isYou ? 'border-l-[4px] border-primary' : ''}`}
+                      style={isYou ? { background: 'linear-gradient(90deg, #f0fff4, #ffffff)' } : {}}
+                    >
+                      <span className="text-sm w-6 text-center font-heading font-black">{medal}</span>
+                      <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-base">{row.avatar_emoji}</div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`font-heading text-xs text-foreground truncate ${isYou ? 'font-extrabold' : 'font-bold'}`}>
+                          {isYou ? `${row.full_name} (You)` : row.full_name}{isBot ? ' 🤖' : ''}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground truncate">{row.school_name || 'EcoQuest'}</p>
+                      </div>
+                      <span className="font-heading font-black text-xs text-primary">{row.eco_points.toLocaleString()}</span>
                     </div>
-                    <span className="font-heading font-black text-xs text-primary">{row.eco_points.toLocaleString()}</span>
-                  </div>
-                );
-              })}
+                  );
+                });
+              })()}
             </div>
           </motion.div>
         </div>
