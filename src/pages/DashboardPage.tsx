@@ -175,7 +175,7 @@ export default function DashboardPage() {
 
   // Determine ecosystem health from eco_points
   const ecosystemHealth = Math.min(100, Math.round((profile.eco_points / 10000) * 100));
-  const treesPlanted = Math.floor(profile.eco_points / 200);
+  const treesPlanted = dashboard.treesPlanted;
   const co2Saved = Math.round(profile.eco_points * 0.011);
 
   // Get submission status for a mission
