@@ -3,6 +3,22 @@ import EcosystemViewer from '@/components/game/EcosystemViewer';
 import { Link } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 
+// ── Twemoji CDN helper ──
+const twemoji = (codepoint: string) =>
+  `https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/${codepoint}.svg`;
+
+// Twemoji codepoint map
+const TWEMOJI: Record<string, string> = {
+  '🌿': '1f33f',
+  '🔥': '1f525',
+  '⭐': '2b50',
+  '🏆': '1f3c6',
+  '🌱': '1f331',
+  '💧': '1f4a7',
+  '🌳': '1f333',
+  '♻️': '267b',
+};
+
 // ── Inline Mock Data ──
 const user = {
   name: 'Rohan',
@@ -71,25 +87,29 @@ const statCardBgs = [
   'linear-gradient(135deg, #ffffff 60%, #f5f3ff 100%)',
 ];
 
-// ── CountUp hook ──
-function useCountUp(target: number, duration = 1200) {
+// ── CountUp hook with delay ──
+function useCountUp(target: number, duration = 1200, delay = 0) {
   const [value, setValue] = useState(0);
   const started = useRef(false);
 
   useEffect(() => {
     if (started.current) return;
     started.current = true;
-    const start = performance.now();
-    const tick = (now: number) => {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      // ease-out: 1 - (1 - t)^3
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(target * eased));
-      if (progress < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  }, [target, duration]);
+
+    const timer = setTimeout(() => {
+      const start = performance.now();
+      const tick = (now: number) => {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setValue(Math.round(target * eased));
+        if (progress < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [target, duration, delay]);
 
   return value;
 }
@@ -97,11 +117,30 @@ function useCountUp(target: number, duration = 1200) {
 // ── Stagger delay helper ──
 const sd = (base: number, i = 0, step = 0.07) => base + i * step;
 
+// ── Twemoji image component ──
+function TwemojiImg({ emoji, className, style }: { emoji: string; className?: string; style?: React.CSSProperties }) {
+  const code = TWEMOJI[emoji];
+  if (!code) return <span className={className} style={style}>{emoji}</span>;
+  return <img src={twemoji(code)} alt={emoji} className={className} style={style} draggable={false} />;
+}
+
+// ── Snappy hover transition (used as base transition after entrance) ──
+const snappyTransition = { duration: 0.15, ease: 'easeOut' };
+
 export default function DashboardPage() {
-  const ecoCount = useCountUp(user.ecoPoints);
-  const streakCount = useCountUp(user.streakDays, 800);
-  const rankCount = useCountUp(user.rank, 600);
+  const ecoCount = useCountUp(user.ecoPoints, 1200, 500);
+  const streakCount = useCountUp(user.streakDays, 800, 620);
+  const rankCount = useCountUp(user.rank, 600, 740);
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
+
+  // Track if entrance animations are done so base transition becomes snappy
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setMounted(true), 1200);
+    return () => clearTimeout(t);
+  }, []);
+
+  const baseTransition = mounted ? snappyTransition : { duration: 0.5 };
 
   return (
     <div className="p-4 md:p-7 max-w-[1400px] mx-auto space-y-5">
@@ -136,8 +175,9 @@ export default function DashboardPage() {
             className="rounded-3xl bg-bg-dark-panel p-4 shadow-float overflow-hidden relative"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={mounted ? snappyTransition : { duration: 0.5, delay: 0.2 }}
             style={{ animation: 'cardGlow 4s ease-in-out infinite' }}
+            whileHover={{ y: -4, boxShadow: '0 10px 40px rgba(27,67,50,0.18)' }}
           >
             {/* Fireflies */}
             {[0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5].map((delay, i) => (
@@ -202,7 +242,8 @@ export default function DashboardPage() {
             className="rounded-[20px] bg-card shadow-card p-5"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.35 }}
+            transition={mounted ? snappyTransition : { duration: 0.5, delay: 0.35 }}
+            whileHover={{ y: -4, boxShadow: '0 10px 40px rgba(27,67,50,0.18)' }}
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-heading font-extrabold text-foreground text-sm">🏆 Class Leaderboard</h2>
@@ -254,11 +295,15 @@ export default function DashboardPage() {
                 style={{ background: statCardBgs[i] }}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: sd(0.2, i) }}
-                whileHover={{ y: -4, boxShadow: '0 10px 40px rgba(27,67,50,0.18)', transition: { duration: 0.15 } }}
+                transition={mounted ? snappyTransition : { duration: 0.5, delay: sd(0.2, i) }}
+                whileHover={{ y: -4, boxShadow: '0 10px 40px rgba(27,67,50,0.18)' }}
                 whileTap={{ scale: 0.97, transition: { duration: 0.08 } }}
               >
-                <span className="absolute top-3 right-3.5 text-[36px] opacity-[0.08] pointer-events-none" style={{ transform: 'rotate(10deg)' }}>{card.emoji}</span>
+                <TwemojiImg
+                  emoji={card.emoji}
+                  className="absolute top-3 right-3.5 w-9 h-9 pointer-events-none"
+                  style={{ transform: 'rotate(10deg)', opacity: 0.18 }}
+                />
                 <p className="font-heading font-extrabold text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{card.label}</p>
                 <p className="font-heading font-black text-[32px] leading-none mt-1" style={{ color: card.numColor }}>{card.value}</p>
                 <p className="text-xs mt-1.5 font-heading font-bold" style={{ color: card.trendColor }}>{card.trend}</p>
@@ -329,8 +374,8 @@ export default function DashboardPage() {
                   className="rounded-[20px] bg-card shadow-card border border-border/30 overflow-hidden group"
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: sd(0.45, i, 0.08), duration: 0.5 }}
-                  whileHover={{ y: -4, boxShadow: '0 10px 40px rgba(27,67,50,0.18)', transition: { duration: 0.15 } }}
+                  transition={mounted ? snappyTransition : { delay: sd(0.45, i, 0.08), duration: 0.5 }}
+                  whileHover={{ y: -4, boxShadow: '0 10px 40px rgba(27,67,50,0.18)' }}
                   whileTap={{ scale: 0.97, transition: { duration: 0.08 } }}
                 >
                   {/* Gradient banner */}
@@ -470,20 +515,21 @@ export default function DashboardPage() {
               <h2 className="font-heading font-extrabold text-foreground text-sm">🏅 Your Badges</h2>
               <Link to="/profile" className="text-xs text-primary font-heading font-bold hover:underline transition-colors duration-[120ms]">View All →</Link>
             </div>
-            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide items-end">
+            <div className="flex gap-3 overflow-x-auto py-4 -my-2 px-1 scrollbar-hide items-end">
               {badges.map((b, i) => (
                 <motion.div
                   key={i}
                   className="shrink-0 flex flex-col items-center gap-1.5 cursor-pointer"
-                  whileHover={b.earned ? { scale: 1.15, rotate: -4, transition: { type: 'spring', stiffness: 500, damping: 15 } } : {}}
+                  whileHover={b.earned ? { scale: 1.15, rotate: -4 } : {}}
+                  transition={b.earned ? { type: 'spring', stiffness: 500, damping: 15 } : snappyTransition}
                   whileTap={b.earned ? { scale: 0.95 } : {}}
                 >
                   {b.earned ? (
                     <div
-                      className="w-16 h-16 rounded-[18px] flex items-center justify-center text-[28px] border-2 border-white/80"
+                      className="w-16 h-16 rounded-[18px] flex items-center justify-center border-2 border-white/80"
                       style={{ background: b.bg, boxShadow: `0 4px 16px ${b.glowColor}` }}
                     >
-                      {b.icon}
+                      <TwemojiImg emoji={b.icon} className="w-7 h-7" />
                     </div>
                   ) : (
                     <div
