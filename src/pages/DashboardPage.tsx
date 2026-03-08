@@ -1,207 +1,408 @@
 import { motion } from 'framer-motion';
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import EcosystemViewer from '@/components/game/EcosystemViewer';
-import { EcoPointsBadge, StreakFlame, RankBadge, StatCard, BadgeCard, ProgressRing } from '@/components/game/GameUI';
-import { MOCK_USER, MOCK_MISSIONS, MOCK_BADGES, WEEKLY_POINTS } from '@/lib/mock-data';
-import { getLevelForPoints } from '@/lib/types';
-import { Flame, Star, Trophy, Leaf, Target, ArrowRight, Clock, Zap, TreePine, Wind } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { useEffect, useState, useRef, useCallback } from 'react';
 
+// ── Inline Mock Data ──
+const user = {
+  name: 'Rohan',
+  level: 3,
+  levelTitle: 'Sprout',
+  ecoPoints: 2180,
+  streakDays: 14,
+  rank: 4,
+  treesPlanted: 7,
+  co2Saved: 24,
+  ecosystemHealth: 72,
+};
+
+const missions = [
+  { id: 1, title: 'Plant a Sapling', desc: 'Visit a local park and plant one native tree sapling', category: 'planting', icon: '🌱', bg: 'linear-gradient(135deg, #52B788, #1B4332)', difficulty: 'easy' as const, time: '30 min', points: 50, progress: 0, status: 'available' as const },
+  { id: 2, title: 'Segregate Waste', desc: 'Sort your household waste into recyclable and organic bins', category: 'waste', icon: '♻️', bg: 'linear-gradient(135deg, #48CAE4, #0369A1)', difficulty: 'medium' as const, time: '20 min', points: 100, progress: 65, status: 'in_progress' as const },
+  { id: 3, title: 'Bike to Campus', desc: 'Skip the car or bus and cycle to school today', category: 'transport', icon: '🚲', bg: 'linear-gradient(135deg, #F4A261, #C2410C)', difficulty: 'hard' as const, time: '45 min', points: 200, progress: 0, status: 'available' as const },
+];
+
+const leaderboard = [
+  { rank: 1, name: 'Priya Sharma', school: 'Delhi Public School', points: 3240, change: '+2', avatar: '👩' },
+  { rank: 2, name: 'Arjun Mehta', school: "St. Xavier's College", points: 2890, change: '+1', avatar: '👨' },
+  { rank: 3, name: 'Ananya Iyer', school: 'Greenfield Academy', points: 2450, change: '-1', avatar: '👩' },
+  { rank: 4, name: 'Rohan (You)', school: 'EcoQuest High', points: 2180, change: '+3', avatar: '🧑', isYou: true },
+  { rank: 5, name: 'Meera Nair', school: 'Sunrise School', points: 1980, change: '—', avatar: '👩' },
+];
+
+const weeklyChart = [
+  { day: 'Mon', value: 35 }, { day: 'Tue', value: 55 }, { day: 'Wed', value: 40 },
+  { day: 'Thu', value: 70 }, { day: 'Fri', value: 90 }, { day: 'Sat', value: 60 },
+  { day: 'Sun', value: 45, isToday: true },
+];
+
+const activity = [
+  { icon: '🌊', bg: '#EFF6FF', action: 'Completed Water Challenge', time: '2 hours ago', pts: '+100 pts' },
+  { icon: '🏆', bg: '#FEF3C7', action: 'Reached Top 10 Leaderboard', time: 'Yesterday', pts: '+Badge' },
+  { icon: '🌱', bg: '#D1FAE5', action: 'Planted 2 Trees', time: '2 days ago', pts: '+150 pts' },
+  { icon: '📚', bg: '#F3E8FF', action: 'Completed Climate Quiz', time: '3 days ago', pts: '+30 pts' },
+];
+
+const badges = [
+  { icon: '🌱', name: 'First Steps', bg: '#D1FAE5', earned: true },
+  { icon: '🔥', name: 'On Fire', bg: '#FEF3C7', earned: true },
+  { icon: '💧', name: 'Water Guard', bg: '#EFF6FF', earned: true },
+  { icon: '🌳', name: 'Tree Hugger', bg: '#D1FAE5', earned: false },
+  { icon: '🏆', name: 'Top 10', bg: '#FEF3C7', earned: false },
+  { icon: '♻️', name: 'Recycler', bg: '#F0FFF4', earned: false },
+];
+
+// ── Animation variants ──
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.08 } } };
 const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
 
+// ── CountUp hook ──
+function useCountUp(target: number, duration = 1200) {
+  const [value, setValue] = useState(0);
+  const started = useRef(false);
+  
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      setValue(Math.round(target * progress));
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, [target, duration]);
+  
+  return value;
+}
+
+// ── Difficulty chip colors ──
+const difficultyStyles = {
+  easy: 'bg-accent text-jungle-bright',
+  medium: 'bg-sun-gold/10 text-sun-gold',
+  hard: 'bg-coral/10 text-coral',
+};
+
 export default function DashboardPage() {
-  const user = MOCK_USER;
-  const levelInfo = getLevelForPoints(user.eco_points);
-  const dailyMissions = MOCK_MISSIONS.slice(0, 3);
-  const completedToday = 1;
-  const dailyGoal = user.daily_goal;
+  const ecoCount = useCountUp(user.ecoPoints);
+  const streakCount = useCountUp(user.streakDays, 800);
+  const rankCount = useCountUp(user.rank, 600);
 
   return (
-    <motion.div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6" variants={stagger} initial="hidden" animate="visible">
-      {/* Welcome header with daily goal */}
-      <motion.div variants={fadeUp} className="flex items-center justify-between">
+    <motion.div className="p-4 md:p-7 max-w-[1400px] mx-auto space-y-5" variants={stagger} initial="hidden" animate="visible">
+      
+      {/* ── GREETING BAR ── */}
+      <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="font-display font-bold text-2xl md:text-3xl text-foreground">
-            Welcome back, <span className="text-primary">{user.full_name.split(' ')[0]}</span> 👋
+          <h1 className="font-heading font-black text-2xl md:text-[26px] text-foreground">
+            Good morning, {user.name}! 🌞
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Let's make today count for the planet</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            You're on a {user.streakDays}-day streak — don't break it today 🔥
+          </p>
         </div>
-        <div className="hidden md:flex items-center gap-3">
-          <ProgressRing progress={Math.round((completedToday / dailyGoal) * 100)} size={52} strokeWidth={5} />
-          <div>
-            <p className="text-xs text-muted-foreground font-heading font-semibold uppercase tracking-wider">Daily Goal</p>
-            <p className="font-mono-stat font-bold text-primary text-lg">{completedToday}/{dailyGoal}</p>
-          </div>
+        <div className="shrink-0 bg-card rounded-full px-4 py-2 shadow-card text-sm font-heading font-bold text-foreground">
+          📅 Sun, 8 Mar 2026
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Left Panel — Ecosystem Viewer */}
-        <motion.div variants={fadeUp} className="lg:col-span-2 space-y-4">
-          <div className="rounded-3xl bg-bg-dark-panel p-4 shadow-float overflow-hidden">
-            <EcosystemViewer ecoPoints={user.eco_points} className="aspect-video" />
-            <div className="mt-4 px-2">
-              <h2 className="font-heading font-bold text-lg" style={{ color: 'hsl(var(--bg-elevated))' }}>Your Forest</h2>
-              {/* Health bar */}
-              <div className="mt-2 h-3 rounded-full bg-jungle-mid/30 overflow-hidden">
+      {/* ── TWO-COLUMN GRID ── */}
+      <div className="grid grid-cols-1 xl:grid-cols-[380px_1fr] gap-6">
+
+        {/* ══════ LEFT COLUMN ══════ */}
+        <div className="space-y-5">
+          {/* Ecosystem Viewer Card */}
+          <motion.div variants={fadeUp} className="rounded-3xl bg-bg-dark-panel p-4 shadow-float overflow-hidden relative">
+            {/* Fireflies */}
+            {[0, 0.7, 1.4, 2.1, 2.8, 3.5].map((delay, i) => (
+              <div
+                key={i}
+                className="absolute w-1 h-1 rounded-full animate-firefly z-10"
+                style={{
+                  background: '#FFE566',
+                  boxShadow: '0 0 6px 2px #FFE566',
+                  top: `${15 + (i * 13) % 55}%`,
+                  left: `${10 + (i * 17) % 75}%`,
+                  animationDelay: `${delay}s`,
+                }}
+              />
+            ))}
+            
+            <EcosystemViewer ecoPoints={user.ecoPoints} className="aspect-[16/10]" />
+            
+            <div className="mt-4 px-2 pb-2">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="font-heading font-extrabold text-base text-bg-elevated">🌳 Your Ecosystem</h2>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-jungle-mid/30 px-3 py-1 text-xs font-heading font-bold text-jungle-pale">
+                  🌿 {user.levelTitle} · Lv {user.level}
+                </span>
+              </div>
+              
+              <p className="text-[10px] font-heading font-extrabold uppercase tracking-[0.14em] text-jungle-light/60 mb-1.5">Ecosystem Health</p>
+              <div className="h-3 rounded-full bg-white/10 overflow-hidden">
                 <motion.div
-                  className="h-full rounded-full bg-jungle-light"
+                  className="h-full rounded-full"
+                  style={{ background: 'linear-gradient(90deg, hsl(var(--jungle-bright)), hsl(var(--jungle-light)))', boxShadow: '0 0 12px hsl(var(--jungle-bright) / 0.5)' }}
                   initial={{ width: 0 }}
-                  animate={{ width: `${levelInfo.progress * 100}%` }}
-                  transition={{ duration: 1.2, ease: 'easeOut' }}
+                  animate={{ width: `${user.ecosystemHealth}%` }}
+                  transition={{ duration: 1.2, ease: 'easeOut', delay: 0.3 }}
                 />
               </div>
-              <p className="text-xs mt-1.5 font-heading" style={{ color: 'hsl(var(--jungle-light))' }}>
-                {Math.round(levelInfo.progress * 100)}% to next level
-              </p>
-              <div className="flex items-center justify-center mt-3">
-                <div className="inline-flex items-center gap-2 rounded-full bg-jungle-mid/30 px-3 py-1 text-sm font-heading font-bold" style={{ color: 'hsl(var(--jungle-pale))' }}>
-                  {levelInfo.title} — Level {levelInfo.level}
-                </div>
-              </div>
-              <div className="flex items-center justify-around mt-3 text-xs font-heading" style={{ color: 'hsl(var(--jungle-light))' }}>
-                <span className="flex items-center gap-1"><TreePine className="w-3.5 h-3.5" /> 3 Trees Planted</span>
-                <span className="flex items-center gap-1"><Wind className="w-3.5 h-3.5" /> 12kg CO₂ Saved</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Seasonal Challenge Card */}
-          <motion.div variants={fadeUp} className="rounded-2xl bg-gradient-to-br from-sun-gold/10 to-coral/10 border border-sun-gold/20 p-5 shadow-card">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">🌧️</span>
-                <h3 className="font-heading font-bold text-foreground text-sm">Monsoon Water Challenge</h3>
-              </div>
-              <span className="bg-sun-gold/20 text-sun-gold text-xs font-heading font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                <Zap className="w-3 h-3" /> 1.5x XP
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground mb-3">Complete water conservation missions for bonus rewards</p>
-            <div className="h-2 rounded-full bg-background overflow-hidden mb-2">
-              <motion.div className="h-full rounded-full bg-sun-gold" initial={{ width: 0 }} animate={{ width: '35%' }} transition={{ duration: 1, delay: 0.5 }} />
-            </div>
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>7/20 missions</span>
-              <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> 5 days left</span>
-            </div>
-          </motion.div>
-        </motion.div>
-
-        {/* Right Panel */}
-        <div className="lg:col-span-3 space-y-6">
-          {/* Stats Row */}
-          <motion.div variants={fadeUp} className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <StatCard icon={<Leaf className="w-5 h-5 text-jungle-bright" />} label="EcoPoints" value={<EcoPointsBadge points={user.eco_points} size="sm" />} borderColor="border-l-jungle-bright" />
-            <StatCard icon={<Flame className="w-5 h-5 text-sun-gold" />} label="Streak" value={<StreakFlame days={user.streak_days} />} borderColor="border-l-sun-gold" />
-            <StatCard icon={<Star className="w-5 h-5 text-lavender" />} label="Level" value={<span className="font-mono-stat font-bold text-primary">{levelInfo.level}</span>} borderColor="border-l-lavender" />
-            <StatCard icon={<Trophy className="w-5 h-5 text-sun-gold" />} label="Rank" value={<RankBadge rank={4} />} borderColor="border-l-sun-gold" />
-          </motion.div>
-
-          {/* Daily Missions */}
-          <motion.div variants={fadeUp} className="rounded-2xl bg-card shadow-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading font-bold text-foreground flex items-center gap-2">
-                <Target className="w-5 h-5 text-primary" /> Today's Quests
-              </h2>
-              <Link to="/missions" className="text-sm text-primary font-heading font-semibold hover:underline flex items-center gap-1">
-                View All <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-            <div className="space-y-3">
-              {dailyMissions.map((m, i) => (
-                <Link key={m.id} to="/missions">
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    whileHover={{ y: -2, boxShadow: 'var(--shadow-hover)' }}
-                    whileTap={{ scale: 0.97 }}
-                    className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-card hover:border-primary/30 transition-all cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-jungle-pale flex items-center justify-center text-xl">{m.icon_url}</div>
-                      <div>
-                        <p className="font-heading font-bold text-sm text-foreground">{m.title}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                            m.difficulty === 'easy' ? 'bg-jungle-pale text-jungle-bright' :
-                            m.difficulty === 'medium' ? 'bg-sun-gold/10 text-sun-gold' :
-                            'bg-coral/10 text-coral'
-                          }`}>{m.difficulty}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="bg-jungle-pale text-jungle-bright text-xs font-mono-stat font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                        <Leaf className="w-3 h-3" /> {m.eco_points_reward}
-                      </span>
-                      <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                  </motion.div>
-                </Link>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Weekly Chart + Activity */}
-          <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div className="md:col-span-3 rounded-2xl bg-card shadow-card p-5">
-              <h2 className="font-heading font-bold text-foreground mb-4">This Week's EcoPoints</h2>
-              <ResponsiveContainer width="100%" height={160}>
-                <AreaChart data={WEEKLY_POINTS}>
-                  <defs>
-                    <linearGradient id="greenFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(var(--jungle-bright))" stopOpacity={0.3} />
-                      <stop offset="100%" stopColor="hsl(var(--jungle-bright))" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
-                  <YAxis hide />
-                  <Tooltip
-                    contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px', color: 'hsl(var(--foreground))' }}
-                    cursor={{ fill: 'hsl(var(--jungle-pale))' }}
-                  />
-                  <Area type="monotone" dataKey="points" stroke="hsl(var(--jungle-bright))" strokeWidth={2} fill="url(#greenFill)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="md:col-span-2 rounded-2xl bg-card shadow-card p-5">
-              <h2 className="font-heading font-bold text-foreground mb-4">Recent Activity</h2>
-              <div className="space-y-3">
+              
+              <div className="grid grid-cols-2 gap-2 mt-3">
                 {[
-                  { icon: '🌱', text: 'Planted a native tree', time: '2h ago' },
-                  { icon: '📝', text: 'Completed climate quiz', time: '5h ago' },
-                  { icon: '🔥', text: '12-day streak!', time: '1d ago' },
-                ].map((a, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-jungle-pale flex items-center justify-center text-sm shrink-0">{a.icon}</div>
-                    <div className="border-l-2 border-dashed border-border pl-3 pb-3">
-                      <p className="text-sm font-heading font-semibold text-foreground">{a.text}</p>
-                      <p className="text-xs text-muted-foreground">{a.time}</p>
-                    </div>
+                  { emoji: '🌳', label: `${user.treesPlanted} Trees Planted` },
+                  { emoji: '💨', label: `${user.co2Saved}kg CO₂ Saved` },
+                ].map((s, i) => (
+                  <div key={i} className="flex items-center gap-2 rounded-xl bg-white/5 px-3 py-2 text-xs font-heading font-bold text-jungle-light">
+                    <span>{s.emoji}</span>{s.label}
                   </div>
                 ))}
               </div>
             </div>
           </motion.div>
 
-          {/* Badges */}
-          <motion.div variants={fadeUp} className="rounded-2xl bg-card shadow-card p-5">
+          {/* Mini Leaderboard */}
+          <motion.div variants={fadeUp} className="rounded-[20px] bg-card shadow-card p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading font-bold text-foreground">Recent Badges</h2>
-              <Link to="/profile" className="text-sm text-primary font-heading font-semibold hover:underline">View All</Link>
+              <h2 className="font-heading font-extrabold text-foreground text-sm">🏆 Class Leaderboard</h2>
+              <Link to="/leaderboard" className="text-xs text-primary font-heading font-bold hover:underline">View All →</Link>
             </div>
-            <div className="flex gap-3 overflow-x-auto pb-2">
-              {MOCK_BADGES.slice(0, 8).map(b => (
-                <div key={b.id} className="shrink-0">
-                  <BadgeCard badge={b} />
+            <div className="space-y-1">
+              {leaderboard.map((row) => {
+                const medal = row.rank === 1 ? '🥇' : row.rank === 2 ? '🥈' : row.rank === 3 ? '🥉' : `${row.rank}`;
+                const isPositive = row.change.startsWith('+');
+                return (
+                  <div
+                    key={row.rank}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors hover:bg-accent/30 ${
+                      row.isYou ? 'bg-accent/40 border-l-[3px] border-primary' : ''
+                    }`}
+                  >
+                    <span className="text-sm w-6 text-center font-heading font-black">{medal}</span>
+                    <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-base">{row.avatar}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-heading font-bold text-xs text-foreground truncate">{row.name}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{row.school}</p>
+                    </div>
+                    <span className="font-heading font-black text-xs text-primary">{row.points.toLocaleString()}</span>
+                    <span className={`text-[10px] font-heading font-bold ${isPositive ? 'text-primary' : row.change === '—' ? 'text-muted-foreground' : 'text-coral'}`}>
+                      {row.change.startsWith('+') ? `↑${row.change}` : row.change.startsWith('-') ? `↓${row.change}` : row.change}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        </div>
+
+        {/* ══════ RIGHT COLUMN ══════ */}
+        <div className="space-y-5">
+          
+          {/* ── STAT CARDS ── */}
+          <motion.div variants={fadeUp} className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              { emoji: '🌿', label: 'EcoPoints', value: ecoCount.toLocaleString(), trend: '↑ +320 this week', borderClass: 'border-l-primary' },
+              { emoji: '🔥', label: 'Day Streak', value: String(streakCount), trend: '🏆 Personal best!', borderClass: 'border-l-sun-gold' },
+              { emoji: '⭐', label: 'Level', value: `Lv ${user.level}`, trend: `${user.levelTitle} rank`, borderClass: 'border-l-sky-blue' },
+              { emoji: '🏆', label: 'Rank', value: `#${rankCount}`, trend: '↑ 3 places this week', borderClass: 'border-l-lavender' },
+            ].map((card, i) => (
+              <motion.div
+                key={card.label}
+                className={`relative rounded-[18px] bg-card shadow-card p-4 border-l-4 ${card.borderClass} overflow-hidden`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45 + i * 0.08, duration: 0.5 }}
+                whileHover={{ y: -4, boxShadow: '0 10px 40px rgba(27,67,50,0.18)' }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <span className="absolute top-2 right-3 text-[28px] opacity-[0.12] pointer-events-none">{card.emoji}</span>
+                <p className="font-heading font-extrabold text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{card.label}</p>
+                <p className="font-heading font-black text-[28px] text-foreground mt-1 leading-none">{card.value}</p>
+                <p className="text-[11px] text-muted-foreground mt-1.5 font-body">{card.trend}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* ── SEASONAL CHALLENGE ── */}
+          <motion.div
+            variants={fadeUp}
+            className="relative rounded-[20px] p-5 overflow-hidden shadow-float"
+            style={{ background: 'linear-gradient(135deg, hsl(var(--jungle-deep)) 0%, hsl(var(--jungle-mid)) 50%, hsl(var(--jungle-bright)) 100%)' }}
+          >
+            {/* Decorative rotating leaf */}
+            <span className="absolute right-8 top-1/2 -translate-y-1/2 text-[48px] opacity-10 animate-rotate-slow pointer-events-none">🌿</span>
+            
+            <div className="flex flex-col sm:flex-row items-start gap-4">
+              <span className="text-4xl shrink-0">🌧️</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-heading font-extrabold uppercase tracking-[0.14em] text-jungle-light">
+                  🏆 Seasonal Challenge · Active
+                </p>
+                <h3 className="font-heading font-extrabold text-base text-primary-foreground mt-1">Monsoon Water Save Challenge</h3>
+                <div className="mt-3 h-2 rounded-full bg-white/15 overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{ background: 'linear-gradient(90deg, hsl(var(--jungle-light)), white)' }}
+                    initial={{ width: 0 }}
+                    animate={{ width: '58%' }}
+                    transition={{ duration: 1, delay: 0.5 }}
+                  />
                 </div>
+                <p className="text-[11px] text-jungle-pale/60 mt-1.5 font-body">
+                  School progress: 580 / 1000 liters · 1.5× EcoPoints active
+                </p>
+              </div>
+              <div className="shrink-0 text-center sm:text-right">
+                <p className="font-heading font-black text-[22px] text-primary-foreground leading-none">5d</p>
+                <p className="text-[10px] text-jungle-pale/50 font-heading mt-0.5">remaining</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* ── TODAY'S QUESTS ── */}
+          <motion.div variants={fadeUp}>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-heading font-extrabold text-foreground text-sm">🎯 Today's Quests</h2>
+              <Link to="/missions" className="text-xs text-primary font-heading font-bold hover:underline">View All Missions →</Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {missions.map((m, i) => (
+                <motion.div
+                  key={m.id}
+                  className="rounded-[20px] bg-card shadow-card border border-border/30 overflow-hidden group"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.65 + i * 0.1, duration: 0.5 }}
+                  whileHover={{ y: -5, boxShadow: '0 10px 40px rgba(27,67,50,0.18)', borderColor: 'hsl(var(--jungle-light))' }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  {/* Gradient banner */}
+                  <div className="h-[72px] flex items-center justify-center relative" style={{ background: m.bg }}>
+                    <span className="text-3xl animate-bob" style={{ animationDelay: `${i * 0.3}s`, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>
+                      {m.icon}
+                    </span>
+                    <span className={`absolute top-2 right-2 text-[10px] font-heading font-bold px-2 py-0.5 rounded-full ${
+                      m.status === 'in_progress' ? 'bg-sun-gold/90 text-foreground' : 'bg-card text-primary'
+                    }`}>
+                      {m.status === 'in_progress' ? 'In Progress' : 'Available'}
+                    </span>
+                  </div>
+                  
+                  {/* Card body */}
+                  <div className="p-4">
+                    <h3 className="font-heading font-bold text-sm text-foreground">{m.title}</h3>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2 font-body">{m.desc}</p>
+                    
+                    <div className="flex items-center gap-2 mt-3">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-heading font-bold ${difficultyStyles[m.difficulty]}`}>
+                        {m.difficulty}
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-heading font-bold bg-sky-blue/10 text-sky-blue">
+                        {m.time}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between mt-4">
+                      <span className="font-heading font-black text-sm text-primary">🌿 +{m.points} pts</span>
+                      <button className="bg-primary hover:bg-primary/80 text-primary-foreground text-xs font-heading font-bold px-3 py-1.5 rounded-[10px] transition-all hover:scale-[1.04]">
+                        {m.status === 'in_progress' ? 'Continue' : 'Accept'}
+                      </button>
+                    </div>
+                    
+                    {m.status === 'in_progress' && (
+                      <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
+                        <motion.div
+                          className="h-full rounded-full bg-primary"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${m.progress}%` }}
+                          transition={{ duration: 0.8, delay: 0.8 }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>
+
+          {/* ── WEEKLY CHART + ACTIVITY ── */}
+          <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {/* Weekly Chart */}
+            <div className="md:col-span-3 rounded-[20px] bg-card shadow-card p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-heading font-extrabold text-foreground text-sm">📈 Weekly EcoPoints</h2>
+                <span className="font-heading font-black text-sm text-primary">+395 pts</span>
+              </div>
+              <div className="flex items-end justify-between gap-2 h-[140px]">
+                {weeklyChart.map((bar, i) => (
+                  <div key={bar.day} className="flex-1 flex flex-col items-center gap-1.5">
+                    <div className="w-full flex-1 flex items-end">
+                      <div
+                        className="w-full rounded-t-lg animate-grow-bar"
+                        style={{
+                          height: `${bar.value}%`,
+                          background: bar.isToday
+                            ? 'linear-gradient(180deg, hsl(var(--jungle-light)), hsl(var(--jungle-bright)))'
+                            : 'hsl(var(--jungle-pale))',
+                          boxShadow: bar.isToday ? '0 0 12px hsl(var(--jungle-bright) / 0.4)' : 'none',
+                          animationDelay: `${i * 0.06}s`,
+                        }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-muted-foreground font-body">{bar.day}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Activity Feed */}
+            <div className="md:col-span-2 rounded-[20px] bg-card shadow-card p-5">
+              <h2 className="font-heading font-extrabold text-foreground text-sm mb-4">⚡ Recent Activity</h2>
+              <div className="space-y-0">
+                {activity.map((a, i) => (
+                  <div key={i} className={`flex items-center gap-3 py-3 hover:bg-accent/20 rounded-lg px-2 transition-colors ${i < activity.length - 1 ? 'border-b border-border/50' : ''}`}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0" style={{ background: a.bg }}>
+                      {a.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-heading font-bold text-xs text-foreground truncate">{a.action}</p>
+                      <p className="text-[10px] text-muted-foreground font-body">{a.time}</p>
+                    </div>
+                    <span className="font-heading font-black text-xs text-primary shrink-0">{a.pts}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* ── BADGE GALLERY ── */}
+          <motion.div variants={fadeUp}>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-heading font-extrabold text-foreground text-sm">🏅 Your Badges</h2>
+              <Link to="/profile" className="text-xs text-primary font-heading font-bold hover:underline">View All →</Link>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              {badges.map((b, i) => (
+                <motion.div
+                  key={i}
+                  className={`shrink-0 flex flex-col items-center gap-1.5 cursor-pointer ${!b.earned ? 'grayscale opacity-40' : ''}`}
+                  whileHover={b.earned ? { scale: 1.12, rotate: -3 } : {}}
+                  whileTap={b.earned ? { scale: 0.95 } : {}}
+                >
+                  <div
+                    className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl relative ${b.earned ? 'shadow-card' : ''}`}
+                    style={{ background: b.bg }}
+                  >
+                    {b.icon}
+                    {!b.earned && <span className="absolute -bottom-0.5 -right-0.5 text-xs">🔒</span>}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground font-body text-center max-w-[64px] truncate">{b.name}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
         </div>
       </div>
     </motion.div>
