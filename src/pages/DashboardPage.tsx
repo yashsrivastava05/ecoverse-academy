@@ -195,11 +195,6 @@ export default function DashboardPage() {
     }
   };
 
-  // Count-up values
-  const ecoCount = useCountUp(profile.eco_points, 1200, 500);
-  const streakCount = useCountUp(profile.streak_days, 800, 620);
-  const rankCount = useCountUp(dashboard.rank, 600, 740);
-
   // Earned badges based on points
   const earnedBadges = badges.map(b => {
     let earned = false;
