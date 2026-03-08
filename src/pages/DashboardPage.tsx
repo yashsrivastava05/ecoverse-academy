@@ -29,7 +29,7 @@ export default function DashboardPage() {
           <p className="text-sm text-muted-foreground mt-1">Let's make today count for the planet</p>
         </div>
         <div className="hidden md:flex items-center gap-3">
-          <ProgressRing percent={Math.round((completedToday / dailyGoal) * 100)} size={52} strokeWidth={5} />
+          <ProgressRing progress={Math.round((completedToday / dailyGoal) * 100)} size={52} strokeWidth={5} />
           <div>
             <p className="text-xs text-muted-foreground font-heading font-semibold uppercase tracking-wider">Daily Goal</p>
             <p className="font-mono-stat font-bold text-primary text-lg">{completedToday}/{dailyGoal}</p>
