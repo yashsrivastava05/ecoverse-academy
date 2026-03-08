@@ -111,13 +111,19 @@ export function SignupPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="school">School</Label>
-              <select id="school" value={form.school_id} onChange={e => setForm({ ...form, school_id: e.target.value })}
-                className="flex h-10 w-full rounded-xl border border-input bg-card px-3 py-2 text-sm text-foreground">
-                <option value="">Select a school</option>
+              <Input
+                id="school"
+                list="school-suggestions"
+                placeholder="Type your school name"
+                value={form.school_id}
+                onChange={e => setForm({ ...form, school_id: e.target.value })}
+                className="rounded-xl"
+              />
+              <datalist id="school-suggestions">
                 {MOCK_SCHOOLS.map(s => (
-                  <option key={s.id} value={s.id}>{s.name} — {s.city}</option>
+                  <option key={s.id} value={s.name}>{s.name} — {s.city}</option>
                 ))}
-              </select>
+              </datalist>
             </div>
             <Button type="submit" className="w-full font-heading font-bold rounded-xl shadow-card">Create Account</Button>
           </form>
