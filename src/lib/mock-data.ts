@@ -4,6 +4,7 @@ export const MOCK_SCHOOLS: School[] = [
   { id: 's1', name: 'Green Valley Academy', city: 'Portland', country: 'USA', logo_url: '', total_eco_points: 125000, student_count: 340 },
   { id: 's2', name: 'Sunrise International', city: 'Mumbai', country: 'India', logo_url: '', total_eco_points: 98000, student_count: 520 },
   { id: 's3', name: 'Nordic Nature School', city: 'Oslo', country: 'Norway', logo_url: '', total_eco_points: 110000, student_count: 180 },
+  { id: 's4', name: 'Maharana Pratap', city: 'Udaipur', country: 'India', logo_url: '', total_eco_points: 75000, student_count: 420 },
 ];
 
 export const MOCK_USER: User = {
