@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MOCK_SCHOOLS } from '@/lib/mock-data';
+
+const SUGGESTED_SCHOOLS = ['Maharana Pratap School', 'Green Valley Academy', 'Sunrise International', 'Nordic Nature School'];
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -58,7 +59,9 @@ export default function LoginPage() {
 
 export function SignupPage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'student', school_id: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'student', school: '' });
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const filteredSchools = SUGGESTED_SCHOOLS.filter(s => s.toLowerCase().includes(form.school.toLowerCase()) && form.school.length > 0);
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,15 +112,39 @@ export function SignupPage() {
                 <option value="school_admin">School Admin</option>
               </select>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
               <Label htmlFor="school">School</Label>
-              <select id="school" value={form.school_id} onChange={e => setForm({ ...form, school_id: e.target.value })}
-                className="flex h-10 w-full rounded-xl border border-input bg-card px-3 py-2 text-sm text-foreground">
-                <option value="">Select a school</option>
-                {MOCK_SCHOOLS.map(s => (
-                  <option key={s.id} value={s.id}>{s.name} — {s.city}</option>
-                ))}
-              </select>
+              <Input
+                id="school"
+                placeholder="Type your school name..."
+                value={form.school}
+                onChange={e => { setForm({ ...form, school: e.target.value }); setShowSuggestions(true); }}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                className="rounded-xl"
+                autoComplete="off"
+              />
+              <AnimatePresence>
+                {showSuggestions && filteredSchools.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    className="absolute z-10 top-full mt-1 w-full bg-card border border-border rounded-xl shadow-float overflow-hidden"
+                  >
+                    {filteredSchools.map(s => (
+                      <button
+                        key={s}
+                        type="button"
+                        onMouseDown={() => { setForm({ ...form, school: s }); setShowSuggestions(false); }}
+                        className="w-full text-left px-4 py-2.5 text-sm font-heading hover:bg-jungle-pale transition-colors text-foreground"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
             <Button type="submit" className="w-full font-heading font-bold rounded-xl shadow-card">Create Account</Button>
           </form>
