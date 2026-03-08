@@ -22,7 +22,7 @@ export default function OnboardingPage() {
   const [goal, setGoal] = useState(2);
 
   const toggleInterest = (id: string) => {
-    setInterests(prev => prev.includes(id) ? prev.filter(i => i !== id) : prev.length < 3 ? [...prev, id] : prev);
+    setInterests(prev => prev.includes(id) ? prev.filter(i => i !== id) : prev.length < 6 ? [...prev, id] : prev);
   };
 
   const finish = () => {
