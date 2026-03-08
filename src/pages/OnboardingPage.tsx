@@ -22,7 +22,7 @@ export default function OnboardingPage() {
   const [goal, setGoal] = useState(2);
 
   const toggleInterest = (id: string) => {
-    setInterests(prev => prev.includes(id) ? prev.filter(i => i !== id) : prev.length < 3 ? [...prev, id] : prev);
+    setInterests(prev => prev.includes(id) ? prev.filter(i => i !== id) : prev.length < 6 ? [...prev, id] : prev);
   };
 
   const finish = () => {
@@ -46,7 +46,7 @@ export default function OnboardingPage() {
 
     <motion.div key="interests" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="text-center">
       <h2 className="font-display font-bold text-2xl text-jungle-deep mb-2">What interests you?</h2>
-      <p className="text-muted-foreground mb-8">Choose up to 3 areas you care about</p>
+      <p className="text-muted-foreground mb-8">Choose the areas you care about</p>
       <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto mb-8">
         {INTERESTS.map(i => (
           <button key={i.id} onClick={() => toggleInterest(i.id)} className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-heading font-semibold transition-all ${interests.includes(i.id) ? 'border-primary bg-jungle-pale text-jungle-bright shadow-card' : 'border-border bg-card text-foreground hover:border-primary/30'}`}>
@@ -62,15 +62,41 @@ export default function OnboardingPage() {
 
     <motion.div key="goal" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="text-center">
       <h2 className="font-display font-bold text-2xl text-jungle-deep mb-2">Set Your Daily Goal</h2>
-      <p className="text-muted-foreground mb-8">How many missions per day?</p>
-      <div className="flex gap-4 justify-center mb-8">
-        {[1, 2, 3].map(g => (
-          <button key={g} onClick={() => setGoal(g)} className={`w-20 h-20 rounded-2xl border-2 text-2xl font-mono-stat font-bold transition-all ${goal === g ? 'border-primary bg-jungle-pale text-jungle-bright scale-110 shadow-card' : 'border-border bg-card text-foreground hover:border-primary/30'}`}>
-            {g}
+      <p className="text-muted-foreground mb-6">Choose your pace — you can change this anytime</p>
+      <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6 max-w-lg mx-auto">
+        {[
+          { value: 1, emoji: '🌱', name: 'Casual', tagline: 'Take it easy', pts: '50+', color: 'border-jungle-light bg-jungle-pale/40' },
+          { value: 2, emoji: '🌿', name: 'Regular', tagline: 'Steady growth', pts: '100+', color: 'border-primary bg-jungle-pale/60', recommended: true },
+          { value: 3, emoji: '🔥', name: 'Hardcore', tagline: 'Maximum impact', pts: '150+', color: 'border-sun-gold bg-sun-gold/10' },
+        ].map(tier => (
+          <button
+            key={tier.value}
+            onClick={() => setGoal(tier.value)}
+            className={`relative flex-1 flex flex-col items-center gap-2 p-5 rounded-2xl border-2 transition-all duration-300 ${
+              goal === tier.value
+                ? `${tier.color} scale-105 shadow-hover ring-2 ring-primary/20`
+                : 'border-border bg-card hover:border-primary/30 hover:shadow-card'
+            }`}
+          >
+            {tier.recommended && (
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-label px-3 py-0.5 rounded-full shadow-card">
+                ⭐ Recommended
+              </span>
+            )}
+            {goal === tier.value && (
+              <span className="absolute top-2 right-2 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs">✓</span>
+            )}
+            <span className="text-4xl">{tier.emoji}</span>
+            <span className="font-heading font-bold text-lg text-foreground">{tier.name}</span>
+            <span className="text-xs text-muted-foreground">{tier.value} mission{tier.value > 1 ? 's' : ''}/day</span>
+            <span className="text-sm font-heading font-semibold text-primary">{tier.pts} pts/day</span>
+            <span className="text-xs text-muted-foreground italic">{tier.tagline}</span>
           </button>
         ))}
       </div>
-      <p className="text-sm text-muted-foreground mb-8">{goal === 1 ? 'Casual' : goal === 2 ? 'Regular' : 'Hardcore'} — {goal * 50}+ EcoPoints/day</p>
+      <p className="text-sm text-muted-foreground mb-6">
+        📊 ~{goal * 50 * 7} EcoPoints/week · 🌳 Your ecosystem grows {goal === 1 ? 'steadily' : goal === 2 ? 'quickly' : 'rapidly'}
+      </p>
       <div className="flex gap-3 justify-center">
         <Button variant="outline" onClick={() => setStep(1)} className="rounded-xl">Back</Button>
         <Button onClick={() => setStep(3)} className="font-heading font-bold rounded-xl shadow-card">Next</Button>
