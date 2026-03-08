@@ -282,6 +282,55 @@
   animation: firefly-blink 2s ease-in-out infinite;
 }
 
+.animate-breathing {
+  animation: breathing 3s ease-in-out infinite;
+}
+
+.animate-raindrop {
+  animation: eco-raindrop 4s ease-in infinite;
+}
+
+.animate-dust-rise {
+  animation: dust-rise 5s ease-out infinite;
+}
+
+.animate-leaf-sway {
+  animation: leaf-sway 3s ease-in-out infinite;
+}
+
+.animate-tree-sway {
+  animation: tree-sway 4s ease-in-out infinite;
+}
+
+.animate-cloud-drift {
+  animation: cloud-drift 30s linear infinite;
+}
+
+.animate-stream-flow {
+  stroke-dasharray: 10 8;
+  animation: stream-flow 3s linear infinite;
+}
+
+.animate-bird-fly {
+  animation: bird-fly 12s linear infinite;
+}
+
+.animate-sparkle {
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+.animate-firefly-glow {
+  animation: firefly-glow 2s ease-in-out infinite;
+}
+
+.animate-aurora {
+  animation: aurora-wave 6s ease-in-out infinite;
+}
+
+.animate-tree-glow {
+  animation: breathing 4s ease-in-out infinite;
+}
+
 .animate-rotate-slow {
   animation: rotate-slow 8s linear infinite;
 }
