@@ -213,8 +213,8 @@
 }
 
 .animate-shimmer {
-  background-size: 200% 100%;
-  animation: shimmer 3s linear infinite;
+  background-size: 200% auto;
+  animation: shimmer 2.5s linear infinite;
 }
 
 .animate-bob {
@@ -240,4 +240,21 @@
 
 .animate-flame-flicker {
   animation: flame-flicker 1.5s ease-in-out infinite alternate;
+}
+
+.animate-leaf-drift-1 {
+  animation: leafDrift1 6s linear infinite;
+}
+
+.animate-leaf-drift-2 {
+  animation: leafDrift2 9s linear infinite;
+  animation-delay: 3s;
+}
+
+.animate-live-pulse {
+  animation: livePulse 2s ease-out infinite;
+}
+
+.animate-card-glow {
+  animation: cardGlow 4s ease-in-out infinite;
 }
