@@ -1,10 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Target, BookOpen, Trophy, User, Bell } from 'lucide-react';
+import { Home, Target, BookOpen, Trophy, User, Bell, LogOut } from 'lucide-react';
 import { EcoPointsBadge, StreakFlame } from '@/components/game/GameUI';
-import { MOCK_USER, MOCK_NOTIFICATIONS } from '@/lib/mock-data';
+import { useAuth } from '@/hooks/useAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 const NAV_ITEMS = [
   { path: '/dashboard', icon: Home, label: 'Dashboard' },
@@ -16,9 +19,43 @@ const NAV_ITEMS = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { profile, signOut } = useAuth();
+  const queryClient = useQueryClient();
   const [notifOpen, setNotifOpen] = useState(false);
-  const unread = MOCK_NOTIFICATIONS.filter(n => !n.is_read).length;
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['nav-notifications', profile?.id],
+    queryFn: async () => {
+      if (!profile) return [];
+      const { data } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      return data ?? [];
+    },
+    enabled: !!profile,
+  });
+
+  const unread = notifications.filter(n => !n.is_read).length;
+
+  const markAllRead = async () => {
+    if (!profile) return;
+    await supabase.from('notifications').update({ is_read: true }).eq('user_id', profile.id);
+    queryClient.invalidateQueries({ queryKey: ['nav-notifications'] });
+    queryClient.invalidateQueries({ queryKey: ['notifications'] });
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/login');
+  };
+
+  const userName = profile?.full_name || 'User';
+  const avatarEmoji = profile?.avatar_emoji || '🌱';
 
   return (
     <div className="min-h-screen bg-gradient-warm">
@@ -60,8 +97,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         )}
 
         <div className="flex items-center gap-3">
-          <StreakFlame days={MOCK_USER.streak_days} />
-          <EcoPointsBadge points={MOCK_USER.eco_points} size="sm" />
+          <StreakFlame days={profile?.streak_days ?? 0} />
+          <EcoPointsBadge points={profile?.eco_points ?? 0} size="sm" />
           <div className="relative">
             <button onClick={() => setNotifOpen(!notifOpen)} className="relative p-2 rounded-lg hover:bg-muted transition-colors">
               <Bell className="w-5 h-5 text-foreground" />
@@ -79,10 +116,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 >
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-heading font-bold text-foreground">Notifications</h3>
-                    <button className="text-xs text-primary font-medium hover:underline">Mark all read</button>
+                    <button onClick={markAllRead} className="text-xs text-primary font-medium hover:underline">Mark all read</button>
                   </div>
                   <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {MOCK_NOTIFICATIONS.map(n => (
+                    {notifications.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">No notifications yet 🌱</p>
+                    ) : notifications.map(n => (
                       <div key={n.id} className={`p-3 rounded-xl text-sm transition-colors ${n.is_read ? 'bg-muted/30' : 'bg-jungle-pale/50'}`}>
                         <p className="font-bold text-foreground">{n.title}</p>
                         <p className="text-muted-foreground text-xs mt-1">{n.body}</p>
@@ -93,9 +132,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               )}
             </AnimatePresence>
           </div>
-          <Link to="/profile" className="w-8 h-8 rounded-full bg-jungle-pale border-2 border-jungle-light flex items-center justify-center text-sm font-bold text-jungle-deep">
-            {MOCK_USER.full_name.charAt(0)}
+          <Link to="/profile" className="w-8 h-8 rounded-full bg-jungle-pale border-2 border-jungle-light flex items-center justify-center text-sm">
+            {avatarEmoji}
           </Link>
+          <button onClick={handleSignOut} className="p-2 rounded-lg hover:bg-muted transition-colors" title="Sign out">
+            <LogOut className="w-4 h-4 text-muted-foreground" />
+          </button>
         </div>
       </header>
 
