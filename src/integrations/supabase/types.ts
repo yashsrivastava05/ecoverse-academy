@@ -163,6 +163,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_emoji: string
+          city: string | null
           created_at: string
           daily_goal: number
           eco_points: number
@@ -176,6 +177,7 @@ export type Database = {
         }
         Insert: {
           avatar_emoji?: string
+          city?: string | null
           created_at?: string
           daily_goal?: number
           eco_points?: number
@@ -189,6 +191,7 @@ export type Database = {
         }
         Update: {
           avatar_emoji?: string
+          city?: string | null
           created_at?: string
           daily_goal?: number
           eco_points?: number
@@ -231,6 +234,7 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: {
           avatar_emoji: string
+          city: string | null
           created_at: string
           daily_goal: number
           eco_points: number
