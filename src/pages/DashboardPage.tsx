@@ -142,6 +142,11 @@ export default function DashboardPage() {
     }
   }, [profile?.id]);
 
+  // Count-up values — must be called unconditionally (before any early return)
+  const ecoCount = useCountUp(profile?.eco_points ?? 0, 1200, 500);
+  const streakCount = useCountUp(profile?.streak_days ?? 0, 800, 620);
+  const rankCount = useCountUp(dashboard.rank, 600, 740);
+
   const baseTransition = mounted ? snappyTransition : { duration: 0.5 };
 
   if (dashboard.isLoading || !profile) {
@@ -189,11 +194,6 @@ export default function DashboardPage() {
       setProofSheetOpen(true);
     }
   };
-
-  // Count-up values
-  const ecoCount = useCountUp(profile.eco_points, 1200, 500);
-  const streakCount = useCountUp(profile.streak_days, 800, 620);
-  const rankCount = useCountUp(dashboard.rank, 600, 740);
 
   // Earned badges based on points
   const earnedBadges = badges.map(b => {
