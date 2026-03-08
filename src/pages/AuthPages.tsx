@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MOCK_SCHOOLS } from '@/lib/mock-data';
+
+const SUGGESTED_SCHOOLS = ['Maharana Pratap School', 'Green Valley Academy', 'Sunrise International', 'Nordic Nature School'];
 
 export default function LoginPage() {
   const navigate = useNavigate();
