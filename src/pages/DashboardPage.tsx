@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import EcosystemViewer from '@/components/game/EcosystemViewer';
 import { Link } from 'react-router-dom';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 // ── Inline Mock Data ──
 const user = {
@@ -31,9 +31,13 @@ const leaderboard = [
 ];
 
 const weeklyChart = [
-  { day: 'Mon', value: 35 }, { day: 'Tue', value: 55 }, { day: 'Wed', value: 40 },
-  { day: 'Thu', value: 70 }, { day: 'Fri', value: 90 }, { day: 'Sat', value: 60 },
-  { day: 'Sun', value: 45, isToday: true },
+  { day: 'Mon', value: 35, pts: 245 },
+  { day: 'Tue', value: 55, pts: 385 },
+  { day: 'Wed', value: 40, pts: 280 },
+  { day: 'Thu', value: 70, pts: 490 },
+  { day: 'Fri', value: 90, pts: 630 },
+  { day: 'Sat', value: 60, pts: 420 },
+  { day: 'Sun', value: 45, pts: 320, isToday: true },
 ];
 
 const activity = [
@@ -44,37 +48,13 @@ const activity = [
 ];
 
 const badges = [
-  { icon: '🌱', name: 'First Steps', bg: '#D1FAE5', earned: true },
-  { icon: '🔥', name: 'On Fire', bg: '#FEF3C7', earned: true },
-  { icon: '💧', name: 'Water Guard', bg: '#EFF6FF', earned: true },
-  { icon: '🌳', name: 'Tree Hugger', bg: '#D1FAE5', earned: false },
-  { icon: '🏆', name: 'Top 10', bg: '#FEF3C7', earned: false },
-  { icon: '♻️', name: 'Recycler', bg: '#F0FFF4', earned: false },
+  { icon: '🌱', name: 'First Steps', bg: '#D1FAE5', earned: true, glowColor: 'rgba(52,211,153,0.35)' },
+  { icon: '🔥', name: 'On Fire', bg: '#FEF3C7', earned: true, glowColor: 'rgba(244,162,97,0.35)' },
+  { icon: '💧', name: 'Water Guard', bg: '#EFF6FF', earned: true, glowColor: 'rgba(72,202,228,0.35)' },
+  { icon: '🌳', name: 'Tree Hugger', bg: '#D1FAE5', earned: false, glowColor: '' },
+  { icon: '🏆', name: 'Top 10', bg: '#FEF3C7', earned: false, glowColor: '' },
+  { icon: '♻️', name: 'Recycler', bg: '#F0FFF4', earned: false, glowColor: '' },
 ];
-
-// ── Animation variants ──
-const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.08 } } };
-const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
-
-// ── CountUp hook ──
-function useCountUp(target: number, duration = 1200) {
-  const [value, setValue] = useState(0);
-  const started = useRef(false);
-  
-  useEffect(() => {
-    if (started.current) return;
-    started.current = true;
-    const start = performance.now();
-    const tick = (now: number) => {
-      const progress = Math.min((now - start) / duration, 1);
-      setValue(Math.round(target * progress));
-      if (progress < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  }, [target, duration]);
-  
-  return value;
-}
 
 // ── Difficulty chip colors ──
 const difficultyStyles = {
@@ -83,16 +63,56 @@ const difficultyStyles = {
   hard: 'bg-coral/10 text-coral',
 };
 
+// ── Stat card gradient backgrounds ──
+const statCardBgs = [
+  'linear-gradient(135deg, #ffffff 60%, #f0fdf4 100%)',
+  'linear-gradient(135deg, #ffffff 60%, #fff7ed 100%)',
+  'linear-gradient(135deg, #ffffff 60%, #eff6ff 100%)',
+  'linear-gradient(135deg, #ffffff 60%, #f5f3ff 100%)',
+];
+
+// ── CountUp hook ──
+function useCountUp(target: number, duration = 1200) {
+  const [value, setValue] = useState(0);
+  const started = useRef(false);
+
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // ease-out: 1 - (1 - t)^3
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(Math.round(target * eased));
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, [target, duration]);
+
+  return value;
+}
+
+// ── Stagger delay helper ──
+const sd = (base: number, i = 0, step = 0.07) => base + i * step;
+
 export default function DashboardPage() {
   const ecoCount = useCountUp(user.ecoPoints);
   const streakCount = useCountUp(user.streakDays, 800);
   const rankCount = useCountUp(user.rank, 600);
+  const [hoveredBar, setHoveredBar] = useState<number | null>(null);
 
   return (
-    <motion.div className="p-4 md:p-7 max-w-[1400px] mx-auto space-y-5" variants={stagger} initial="hidden" animate="visible">
-      
+    <div className="p-4 md:p-7 max-w-[1400px] mx-auto space-y-5">
+
       {/* ── GREETING BAR ── */}
-      <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <motion.div
+        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
         <div>
           <h1 className="font-heading font-black text-2xl md:text-[26px] text-foreground">
             Good morning, {user.name}! 🌞
@@ -112,43 +132,58 @@ export default function DashboardPage() {
         {/* ══════ LEFT COLUMN ══════ */}
         <div className="space-y-5">
           {/* Ecosystem Viewer Card */}
-          <motion.div variants={fadeUp} className="rounded-3xl bg-bg-dark-panel p-4 shadow-float overflow-hidden relative">
+          <motion.div
+            className="rounded-3xl bg-bg-dark-panel p-4 shadow-float overflow-hidden relative"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            style={{ animation: 'cardGlow 4s ease-in-out infinite' }}
+          >
             {/* Fireflies */}
-            {[0, 0.7, 1.4, 2.1, 2.8, 3.5].map((delay, i) => (
+            {[0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5].map((delay, i) => (
               <div
                 key={i}
                 className="absolute w-1 h-1 rounded-full animate-firefly z-10"
                 style={{
                   background: '#FFE566',
-                  boxShadow: '0 0 6px 2px #FFE566',
-                  top: `${15 + (i * 13) % 55}%`,
-                  left: `${10 + (i * 17) % 75}%`,
+                  boxShadow: '0 0 6px 3px rgba(255,229,102,0.75)',
+                  top: `${15 + (i * 11) % 55}%`,
+                  left: `${10 + (i * 13) % 75}%`,
                   animationDelay: `${delay}s`,
+                  animationDuration: `${1.8 + (i % 4) * 0.4}s`,
                 }}
               />
             ))}
-            
+
+            {/* Drifting leaves */}
+            <span className="absolute text-sm pointer-events-none z-10 animate-leaf-drift-1" style={{ left: '25%', top: '-5%' }}>🍃</span>
+            <span className="absolute text-sm pointer-events-none z-10 animate-leaf-drift-2" style={{ left: '65%', top: '-5%' }}>🍃</span>
+
             <EcosystemViewer ecoPoints={user.ecoPoints} className="aspect-[16/10]" />
-            
+
             <div className="mt-4 px-2 pb-2">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="font-heading font-extrabold text-base text-bg-elevated">🌳 Your Ecosystem</h2>
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="font-heading font-extrabold text-base text-bg-elevated">🌳 {user.name}'s Forest</h2>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-jungle-mid/30 px-3 py-1 text-xs font-heading font-bold text-jungle-pale">
                   🌿 {user.levelTitle} · Lv {user.level}
                 </span>
               </div>
-              
+              <p className="text-xs text-jungle-light/50 font-body mb-3">Growing since Day 1 · {user.treesPlanted} trees strong</p>
+
               <p className="text-[10px] font-heading font-extrabold uppercase tracking-[0.14em] text-jungle-light/60 mb-1.5">Ecosystem Health</p>
               <div className="h-3 rounded-full bg-white/10 overflow-hidden">
                 <motion.div
-                  className="h-full rounded-full"
-                  style={{ background: 'linear-gradient(90deg, hsl(var(--jungle-bright)), hsl(var(--jungle-light)))', boxShadow: '0 0 12px hsl(var(--jungle-bright) / 0.5)' }}
+                  className="h-full rounded-full animate-shimmer"
+                  style={{
+                    background: 'linear-gradient(90deg, #40916C 0%, #74C69D 40%, #D8F3DC 50%, #74C69D 60%, #40916C 100%)',
+                    backgroundSize: '200% auto',
+                  }}
                   initial={{ width: 0 }}
                   animate={{ width: `${user.ecosystemHealth}%` }}
                   transition={{ duration: 1.2, ease: 'easeOut', delay: 0.3 }}
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-2 mt-3">
                 {[
                   { emoji: '🌳', label: `${user.treesPlanted} Trees Planted` },
@@ -163,10 +198,15 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* Mini Leaderboard */}
-          <motion.div variants={fadeUp} className="rounded-[20px] bg-card shadow-card p-5">
+          <motion.div
+            className="rounded-[20px] bg-card shadow-card p-5"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.35 }}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-heading font-extrabold text-foreground text-sm">🏆 Class Leaderboard</h2>
-              <Link to="/leaderboard" className="text-xs text-primary font-heading font-bold hover:underline">View All →</Link>
+              <Link to="/leaderboard" className="text-xs text-primary font-heading font-bold hover:underline transition-colors duration-[120ms]">View All →</Link>
             </div>
             <div className="space-y-1">
               {leaderboard.map((row) => {
@@ -175,14 +215,15 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={row.rank}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors hover:bg-accent/30 ${
-                      row.isYou ? 'bg-accent/40 border-l-[3px] border-primary' : ''
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 hover:bg-accent/30 ${
+                      row.isYou ? 'border-l-[4px] border-primary' : ''
                     }`}
+                    style={row.isYou ? { background: 'linear-gradient(90deg, #f0fff4, #ffffff)' } : {}}
                   >
                     <span className="text-sm w-6 text-center font-heading font-black">{medal}</span>
                     <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-base">{row.avatar}</div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-heading font-bold text-xs text-foreground truncate">{row.name}</p>
+                      <p className={`font-heading text-xs text-foreground truncate ${row.isYou ? 'font-extrabold' : 'font-bold'}`}>{row.name}</p>
                       <p className="text-[10px] text-muted-foreground truncate">{row.school}</p>
                     </div>
                     <span className="font-heading font-black text-xs text-primary">{row.points.toLocaleString()}</span>
@@ -198,84 +239,99 @@ export default function DashboardPage() {
 
         {/* ══════ RIGHT COLUMN ══════ */}
         <div className="space-y-5">
-          
+
           {/* ── STAT CARDS ── */}
-          <motion.div variants={fadeUp} className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
-              { emoji: '🌿', label: 'EcoPoints', value: ecoCount.toLocaleString(), trend: '↑ +320 this week', borderClass: 'border-l-primary' },
-              { emoji: '🔥', label: 'Day Streak', value: String(streakCount), trend: '🏆 Personal best!', borderClass: 'border-l-sun-gold' },
-              { emoji: '⭐', label: 'Level', value: `Lv ${user.level}`, trend: `${user.levelTitle} rank`, borderClass: 'border-l-sky-blue' },
-              { emoji: '🏆', label: 'Rank', value: `#${rankCount}`, trend: '↑ 3 places this week', borderClass: 'border-l-lavender' },
+              { emoji: '🌿', label: 'EcoPoints', value: ecoCount.toLocaleString(), trend: '↑ +320 this week', trendColor: '#40916C', borderClass: 'border-l-primary', numColor: '#1B4332' },
+              { emoji: '🔥', label: 'Day Streak', value: String(streakCount), trend: '🏆 Personal best!', trendColor: '#D97706', borderClass: 'border-l-sun-gold', numColor: '#C2410C' },
+              { emoji: '⭐', label: 'Level', value: `Lv ${user.level}`, trend: `${user.levelTitle} rank`, trendColor: '#40916C', borderClass: 'border-l-sky-blue', numColor: '#1B4332' },
+              { emoji: '🏆', label: 'Rank', value: `#${rankCount}`, trend: '↑ 3 places this week', trendColor: '#4338CA', borderClass: 'border-l-lavender', numColor: '#4338CA' },
             ].map((card, i) => (
               <motion.div
                 key={card.label}
-                className={`relative rounded-[18px] bg-card shadow-card p-4 border-l-4 ${card.borderClass} overflow-hidden`}
-                initial={{ opacity: 0, y: 20 }}
+                className={`relative rounded-[18px] shadow-card p-4 border-l-[5px] ${card.borderClass} overflow-hidden`}
+                style={{ background: statCardBgs[i] }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.45 + i * 0.08, duration: 0.5 }}
-                whileHover={{ y: -4, boxShadow: '0 10px 40px rgba(27,67,50,0.18)' }}
-                whileTap={{ scale: 0.97 }}
+                transition={{ duration: 0.5, delay: sd(0.2, i) }}
+                whileHover={{ y: -4, boxShadow: '0 10px 40px rgba(27,67,50,0.18)', transition: { duration: 0.15 } }}
+                whileTap={{ scale: 0.97, transition: { duration: 0.08 } }}
               >
-                <span className="absolute top-2 right-3 text-[28px] opacity-[0.12] pointer-events-none">{card.emoji}</span>
+                <span className="absolute top-3 right-3.5 text-[36px] opacity-[0.08] pointer-events-none" style={{ transform: 'rotate(10deg)' }}>{card.emoji}</span>
                 <p className="font-heading font-extrabold text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{card.label}</p>
-                <p className="font-heading font-black text-[28px] text-foreground mt-1 leading-none">{card.value}</p>
-                <p className="text-[11px] text-muted-foreground mt-1.5 font-body">{card.trend}</p>
+                <p className="font-heading font-black text-[32px] leading-none mt-1" style={{ color: card.numColor }}>{card.value}</p>
+                <p className="text-xs mt-1.5 font-heading font-bold" style={{ color: card.trendColor }}>{card.trend}</p>
               </motion.div>
             ))}
-          </motion.div>
+          </div>
 
           {/* ── SEASONAL CHALLENGE ── */}
           <motion.div
-            variants={fadeUp}
-            className="relative rounded-[20px] p-5 overflow-hidden shadow-float"
-            style={{ background: 'linear-gradient(135deg, hsl(var(--jungle-deep)) 0%, hsl(var(--jungle-mid)) 50%, hsl(var(--jungle-bright)) 100%)' }}
+            className="relative rounded-[20px] overflow-hidden shadow-float"
+            style={{
+              background: 'linear-gradient(135deg, hsl(var(--jungle-deep)) 0%, hsl(var(--jungle-mid)) 50%, hsl(var(--jungle-bright)) 100%)',
+              padding: '22px 26px',
+            }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.35 }}
           >
             {/* Decorative rotating leaf */}
-            <span className="absolute right-8 top-1/2 -translate-y-1/2 text-[48px] opacity-10 animate-rotate-slow pointer-events-none">🌿</span>
-            
+            <span className="absolute right-8 top-1/2 -translate-y-1/2 text-[80px] opacity-[0.14] pointer-events-none" style={{ animation: 'rotate-slow 12s linear infinite' }}>🌿</span>
+
             <div className="flex flex-col sm:flex-row items-start gap-4">
               <span className="text-4xl shrink-0">🌧️</span>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-heading font-extrabold uppercase tracking-[0.14em] text-jungle-light">
-                  🏆 Seasonal Challenge · Active
+                <p className="text-[10px] font-heading font-extrabold uppercase tracking-[0.14em] text-jungle-light flex items-center gap-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-jungle-light animate-live-pulse shrink-0" />
+                  Seasonal Challenge · Active
                 </p>
                 <h3 className="font-heading font-extrabold text-base text-primary-foreground mt-1">Monsoon Water Save Challenge</h3>
                 <div className="mt-3 h-2 rounded-full bg-white/15 overflow-hidden">
                   <motion.div
-                    className="h-full rounded-full"
-                    style={{ background: 'linear-gradient(90deg, hsl(var(--jungle-light)), white)' }}
+                    className="h-full rounded-full animate-shimmer"
+                    style={{
+                      background: 'linear-gradient(90deg, #74C69D 0%, #D8F3DC 40%, #ffffff 50%, #D8F3DC 60%, #74C69D 100%)',
+                      backgroundSize: '200% auto',
+                      boxShadow: '0 0 10px rgba(116,198,157,0.7)',
+                    }}
                     initial={{ width: 0 }}
                     animate={{ width: '58%' }}
-                    transition={{ duration: 1, delay: 0.5 }}
+                    transition={{ duration: 1.5, delay: 0.5, ease: 'easeOut' }}
                   />
                 </div>
                 <p className="text-[11px] text-jungle-pale/60 mt-1.5 font-body">
                   School progress: 580 / 1000 liters · 1.5× EcoPoints active
                 </p>
               </div>
-              <div className="shrink-0 text-center sm:text-right">
-                <p className="font-heading font-black text-[22px] text-primary-foreground leading-none">5d</p>
-                <p className="text-[10px] text-jungle-pale/50 font-heading mt-0.5">remaining</p>
+              <div className="shrink-0" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 14, padding: '10px 16px', textAlign: 'center' }}>
+                <p className="font-heading font-black text-[28px] text-primary-foreground leading-none">5d</p>
+                <p className="text-[11px] text-jungle-pale/60 font-body mt-0.5">remaining</p>
               </div>
             </div>
           </motion.div>
 
           {/* ── TODAY'S QUESTS ── */}
-          <motion.div variants={fadeUp}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-heading font-extrabold text-foreground text-sm">🎯 Today's Quests</h2>
-              <Link to="/missions" className="text-xs text-primary font-heading font-bold hover:underline">View All Missions →</Link>
+              <Link to="/missions" className="text-xs text-primary font-heading font-bold hover:underline transition-colors duration-[120ms]">View All Missions →</Link>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {missions.map((m, i) => (
                 <motion.div
                   key={m.id}
                   className="rounded-[20px] bg-card shadow-card border border-border/30 overflow-hidden group"
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.65 + i * 0.1, duration: 0.5 }}
-                  whileHover={{ y: -5, boxShadow: '0 10px 40px rgba(27,67,50,0.18)', borderColor: 'hsl(var(--jungle-light))' }}
-                  whileTap={{ scale: 0.97 }}
+                  transition={{ delay: sd(0.45, i, 0.08), duration: 0.5 }}
+                  whileHover={{ y: -4, boxShadow: '0 10px 40px rgba(27,67,50,0.18)', transition: { duration: 0.15 } }}
+                  whileTap={{ scale: 0.97, transition: { duration: 0.08 } }}
                 >
                   {/* Gradient banner */}
                   <div className="h-[72px] flex items-center justify-center relative" style={{ background: m.bg }}>
@@ -288,12 +344,12 @@ export default function DashboardPage() {
                       {m.status === 'in_progress' ? 'In Progress' : 'Available'}
                     </span>
                   </div>
-                  
+
                   {/* Card body */}
                   <div className="p-4">
                     <h3 className="font-heading font-bold text-sm text-foreground">{m.title}</h3>
                     <p className="text-xs text-muted-foreground mt-1 line-clamp-2 font-body">{m.desc}</p>
-                    
+
                     <div className="flex items-center gap-2 mt-3">
                       <span className={`text-[10px] px-2 py-0.5 rounded-full font-heading font-bold ${difficultyStyles[m.difficulty]}`}>
                         {m.difficulty}
@@ -302,18 +358,22 @@ export default function DashboardPage() {
                         {m.time}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between mt-4">
                       <span className="font-heading font-black text-sm text-primary">🌿 +{m.points} pts</span>
-                      <button className="bg-primary hover:bg-primary/80 text-primary-foreground text-xs font-heading font-bold px-3 py-1.5 rounded-[10px] transition-all hover:scale-[1.04]">
+                      <button className="bg-primary hover:bg-primary/80 text-primary-foreground text-xs font-heading font-bold px-3 py-1.5 rounded-[10px] transition-all duration-[120ms] hover:scale-[1.04] active:scale-[0.97]">
                         {m.status === 'in_progress' ? 'Continue' : 'Accept'}
                       </button>
                     </div>
-                    
+
                     {m.status === 'in_progress' && (
-                      <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
+                      <div className="mt-3 h-[5px] rounded-full bg-muted overflow-hidden">
                         <motion.div
-                          className="h-full rounded-full bg-primary"
+                          className="h-full rounded-full animate-shimmer"
+                          style={{
+                            background: 'linear-gradient(90deg, #40916C 0%, #74C69D 40%, #D8F3DC 50%, #74C69D 60%, #40916C 100%)',
+                            backgroundSize: '200% auto',
+                          }}
                           initial={{ width: 0 }}
                           animate={{ width: `${m.progress}%` }}
                           transition={{ duration: 0.8, delay: 0.8 }}
@@ -327,30 +387,54 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* ── WEEKLY CHART + ACTIVITY ── */}
-          <motion.div variants={fadeUp} className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-5 gap-4"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.55 }}
+          >
             {/* Weekly Chart */}
             <div className="md:col-span-3 rounded-[20px] bg-card shadow-card p-5">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-heading font-extrabold text-foreground text-sm">📈 Weekly EcoPoints</h2>
                 <span className="font-heading font-black text-sm text-primary">+395 pts</span>
               </div>
-              <div className="flex items-end justify-between gap-2 h-[140px]">
+              <div className="flex items-end gap-2 px-1" style={{ height: 130 }}>
                 {weeklyChart.map((bar, i) => (
-                  <div key={bar.day} className="flex-1 flex flex-col items-center gap-1.5">
-                    <div className="w-full flex-1 flex items-end">
+                  <div key={bar.day} className="flex-1 flex flex-col items-center relative">
+                    {/* Tooltip */}
+                    {hoveredBar === i && (
                       <div
-                        className="w-full rounded-t-lg animate-grow-bar"
+                        className="absolute -top-8 z-20 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-heading font-bold text-white pointer-events-none"
                         style={{
-                          height: `${bar.value}%`,
+                          background: '#1B4332',
+                          opacity: 1,
+                          transition: 'opacity 0.15s ease',
+                        }}
+                      >
+                        {bar.pts} pts
+                      </div>
+                    )}
+                    <div className="w-full flex items-end justify-center" style={{ height: 100 }}>
+                      <div
+                        className="w-full rounded-t-lg cursor-pointer"
+                        onMouseEnter={() => setHoveredBar(i)}
+                        onMouseLeave={() => setHoveredBar(null)}
+                        style={{
+                          height: (bar.value / 100) * 100,
+                          minHeight: 4,
                           background: bar.isToday
-                            ? 'linear-gradient(180deg, hsl(var(--jungle-light)), hsl(var(--jungle-bright)))'
-                            : 'hsl(var(--jungle-pale))',
-                          boxShadow: bar.isToday ? '0 0 12px hsl(var(--jungle-bright) / 0.4)' : 'none',
-                          animationDelay: `${i * 0.06}s`,
+                            ? 'linear-gradient(180deg, #74C69D, #40916C)'
+                            : '#D8F3DC',
+                          boxShadow: bar.isToday ? '0 -4px 16px rgba(64,145,108,0.45)' : 'none',
+                          borderRadius: '8px 8px 0 0',
+                          animation: `growBar 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.06}s both`,
+                          transformOrigin: 'bottom',
+                          transition: 'box-shadow 0.15s ease',
                         }}
                       />
                     </div>
-                    <span className="text-[10px] text-muted-foreground font-body">{bar.day}</span>
+                    <span className="text-[11px] text-muted-foreground font-body mt-1.5">{bar.day}</span>
                   </div>
                 ))}
               </div>
@@ -361,7 +445,7 @@ export default function DashboardPage() {
               <h2 className="font-heading font-extrabold text-foreground text-sm mb-4">⚡ Recent Activity</h2>
               <div className="space-y-0">
                 {activity.map((a, i) => (
-                  <div key={i} className={`flex items-center gap-3 py-3 hover:bg-accent/20 rounded-lg px-2 transition-colors ${i < activity.length - 1 ? 'border-b border-border/50' : ''}`}>
+                  <div key={i} className={`flex items-center gap-3 py-3 hover:bg-accent/20 rounded-xl px-2 transition-all duration-150 ${i < activity.length - 1 ? 'border-b border-border/50' : ''}`}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0" style={{ background: a.bg }}>
                       {a.icon}
                     </div>
@@ -377,34 +461,61 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* ── BADGE GALLERY ── */}
-          <motion.div variants={fadeUp}>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.65 }}
+          >
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-heading font-extrabold text-foreground text-sm">🏅 Your Badges</h2>
-              <Link to="/profile" className="text-xs text-primary font-heading font-bold hover:underline">View All →</Link>
+              <Link to="/profile" className="text-xs text-primary font-heading font-bold hover:underline transition-colors duration-[120ms]">View All →</Link>
             </div>
-            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide items-end">
               {badges.map((b, i) => (
                 <motion.div
                   key={i}
-                  className={`shrink-0 flex flex-col items-center gap-1.5 cursor-pointer ${!b.earned ? 'grayscale opacity-40' : ''}`}
-                  whileHover={b.earned ? { scale: 1.12, rotate: -3 } : {}}
+                  className="shrink-0 flex flex-col items-center gap-1.5 cursor-pointer"
+                  whileHover={b.earned ? { scale: 1.15, rotate: -4, transition: { type: 'spring', stiffness: 500, damping: 15 } } : {}}
                   whileTap={b.earned ? { scale: 0.95 } : {}}
                 >
-                  <div
-                    className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl relative ${b.earned ? 'shadow-card' : ''}`}
-                    style={{ background: b.bg }}
-                  >
-                    {b.icon}
-                    {!b.earned && <span className="absolute -bottom-0.5 -right-0.5 text-xs">🔒</span>}
-                  </div>
-                  <p className="text-[10px] text-muted-foreground font-body text-center max-w-[64px] truncate">{b.name}</p>
+                  {b.earned ? (
+                    <div
+                      className="w-16 h-16 rounded-[18px] flex items-center justify-center text-[28px] border-2 border-white/80"
+                      style={{ background: b.bg, boxShadow: `0 4px 16px ${b.glowColor}` }}
+                    >
+                      {b.icon}
+                    </div>
+                  ) : (
+                    <div
+                      className="w-[52px] h-[52px] rounded-[14px] flex items-center justify-center relative"
+                      style={{ background: b.bg, filter: 'grayscale(1) opacity(0.35)' }}
+                    >
+                      <span className="text-sm">🔒</span>
+                    </div>
+                  )}
+                  <p className={`text-center max-w-[64px] truncate ${
+                    b.earned
+                      ? 'text-[11px] font-heading font-bold text-foreground'
+                      : 'text-[10px] font-heading font-semibold text-muted-foreground'
+                  }`}>
+                    {b.name}
+                  </p>
                 </motion.div>
               ))}
+              {/* More badges pill */}
+              <div className="shrink-0 flex items-center self-center">
+                <span
+                  className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-heading font-bold cursor-pointer transition-all duration-[120ms] hover:bg-jungle-bright hover:text-white"
+                  style={{ background: '#D8F3DC', color: '#40916C' }}
+                >
+                  🔒 3 more to unlock →
+                </span>
+              </div>
             </div>
           </motion.div>
 
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
