@@ -59,7 +59,9 @@ export default function LoginPage() {
 
 export function SignupPage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'student', school_id: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'student', school: '' });
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const filteredSchools = SUGGESTED_SCHOOLS.filter(s => s.toLowerCase().includes(form.school.toLowerCase()) && form.school.length > 0);
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
