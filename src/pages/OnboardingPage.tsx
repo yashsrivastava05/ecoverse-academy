@@ -46,7 +46,7 @@ export default function OnboardingPage() {
 
     <motion.div key="interests" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -50 }} className="text-center">
       <h2 className="font-display font-bold text-2xl text-jungle-deep mb-2">What interests you?</h2>
-      <p className="text-muted-foreground mb-8">Choose up to 3 areas you care about</p>
+      <p className="text-muted-foreground mb-8">Choose the areas you care about</p>
       <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto mb-8">
         {INTERESTS.map(i => (
           <button key={i.id} onClick={() => toggleInterest(i.id)} className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-heading font-semibold transition-all ${interests.includes(i.id) ? 'border-primary bg-jungle-pale text-jungle-bright shadow-card' : 'border-border bg-card text-foreground hover:border-primary/30'}`}>
