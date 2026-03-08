@@ -228,6 +228,8 @@ export function useDashboardData() {
     activity: activityQuery.data ?? [],
     notifications: notificationsQuery.data ?? [],
     unreadCount,
+    treesPlanted: treesPlantedQuery.data ?? 0,
+    realUserCount: realUserCountQuery.data ?? 0,
     isLoading: !profile || missionsQuery.isLoading,
     acceptMission,
     submitProof,
