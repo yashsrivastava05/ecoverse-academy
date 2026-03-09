@@ -117,8 +117,10 @@ export type Database = {
           notes: string | null
           photo_url: string | null
           reviewed_at: string | null
+          reviewed_by: string | null
           status: Database["public"]["Enums"]["mission_status"]
           submitted_at: string
+          teacher_feedback: string | null
           user_id: string
         }
         Insert: {
@@ -128,8 +130,10 @@ export type Database = {
           notes?: string | null
           photo_url?: string | null
           reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["mission_status"]
           submitted_at?: string
+          teacher_feedback?: string | null
           user_id: string
         }
         Update: {
@@ -139,8 +143,10 @@ export type Database = {
           notes?: string | null
           photo_url?: string | null
           reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["mission_status"]
           submitted_at?: string
+          teacher_feedback?: string | null
           user_id?: string
         }
         Relationships: [
@@ -157,14 +163,17 @@ export type Database = {
         Row: {
           category: Database["public"]["Enums"]["mission_category"]
           created_at: string
+          created_by: string | null
           description: string
           difficulty: Database["public"]["Enums"]["mission_difficulty"]
           eco_points_reward: number
+          expires_at: string | null
           icon: string
           id: string
           is_active: boolean
           requires_location: boolean
           requires_photo: boolean
+          school_only: boolean | null
           steps: string[] | null
           title: string
           xp_reward: number
@@ -172,14 +181,17 @@ export type Database = {
         Insert: {
           category: Database["public"]["Enums"]["mission_category"]
           created_at?: string
+          created_by?: string | null
           description: string
           difficulty: Database["public"]["Enums"]["mission_difficulty"]
           eco_points_reward?: number
+          expires_at?: string | null
           icon?: string
           id?: string
           is_active?: boolean
           requires_location?: boolean
           requires_photo?: boolean
+          school_only?: boolean | null
           steps?: string[] | null
           title: string
           xp_reward?: number
@@ -187,14 +199,17 @@ export type Database = {
         Update: {
           category?: Database["public"]["Enums"]["mission_category"]
           created_at?: string
+          created_by?: string | null
           description?: string
           difficulty?: Database["public"]["Enums"]["mission_difficulty"]
           eco_points_reward?: number
+          expires_at?: string | null
           icon?: string
           id?: string
           is_active?: boolean
           requires_location?: boolean
           requires_photo?: boolean
+          school_only?: boolean | null
           steps?: string[] | null
           title?: string
           xp_reward?: number
@@ -306,6 +321,24 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -320,8 +353,10 @@ export type Database = {
           notes: string | null
           photo_url: string | null
           reviewed_at: string | null
+          reviewed_by: string | null
           status: Database["public"]["Enums"]["mission_status"]
           submitted_at: string
+          teacher_feedback: string | null
           user_id: string
         }[]
         SetofOptions: {
@@ -330,6 +365,13 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
       }
       update_streak: {
         Args: { p_user_id: string }
@@ -356,6 +398,7 @@ export type Database = {
       }
     }
     Enums: {
+      app_role: "student" | "teacher" | "school_admin"
       lesson_topic:
         | "climate_change"
         | "pollution"
@@ -506,6 +549,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["student", "teacher", "school_admin"],
       lesson_topic: [
         "climate_change",
         "pollution",
