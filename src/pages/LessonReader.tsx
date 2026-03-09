@@ -157,9 +157,9 @@ export default function LessonReader() {
                 className="bg-primary/5 border-l-4 border-primary rounded-r-lg p-4"
               >
                 <p className="font-heading font-bold text-sm text-primary mb-1">
-                  💡 {fact.title}
+                  💡 {fact.title || 'Did You Know?'}
                 </p>
-                <p className="text-sm text-foreground/80 italic">{fact.content}</p>
+                <p className="text-sm text-foreground/80 italic">{fact.text || fact.content || ''}</p>
               </motion.div>
             ))}
           </div>
