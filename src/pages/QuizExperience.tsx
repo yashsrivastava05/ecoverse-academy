@@ -267,7 +267,7 @@ export default function QuizExperience() {
 
   // Active quiz state
   const q = questions[currentIdx];
-  const isCorrect = selectedAnswer?.toLowerCase().trim() === q.answer.toLowerCase().trim();
+  const isCorrect = normalizeAnswer(selectedAnswer || '') === normalizeAnswer(q.answer);
 
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-6">
