@@ -8,8 +8,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 
 interface FactBox {
-  title: string;
-  content: string;
+  text?: string;
+  title?: string;
+  content?: string;
+}
+
+function renderMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
 }
 
 export default function LessonReader() {
