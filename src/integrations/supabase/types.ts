@@ -38,6 +38,77 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_completions: {
+        Row: {
+          completed_at: string
+          id: string
+          lesson_id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          lesson_id: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          lesson_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_completions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lessons: {
+        Row: {
+          body: string
+          created_at: string
+          eco_points_reward: number
+          estimated_minutes: number
+          fact_boxes: Json
+          id: string
+          key_takeaways: string[]
+          order_index: number
+          summary: string
+          title: string
+          topic: Database["public"]["Enums"]["lesson_topic"]
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          eco_points_reward?: number
+          estimated_minutes?: number
+          fact_boxes?: Json
+          id?: string
+          key_takeaways?: string[]
+          order_index?: number
+          summary: string
+          title: string
+          topic: Database["public"]["Enums"]["lesson_topic"]
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          eco_points_reward?: number
+          estimated_minutes?: number
+          fact_boxes?: Json
+          id?: string
+          key_takeaways?: string[]
+          order_index?: number
+          summary?: string
+          title?: string
+          topic?: Database["public"]["Enums"]["lesson_topic"]
+        }
+        Relationships: []
+      }
       mission_submissions: {
         Row: {
           id: string
@@ -205,6 +276,36 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_attempts: {
+        Row: {
+          created_at: string
+          id: string
+          points_earned: number
+          score: number
+          topic: Database["public"]["Enums"]["lesson_topic"]
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          points_earned?: number
+          score: number
+          topic: Database["public"]["Enums"]["lesson_topic"]
+          total_questions?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          points_earned?: number
+          score?: number
+          topic?: Database["public"]["Enums"]["lesson_topic"]
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -255,6 +356,13 @@ export type Database = {
       }
     }
     Enums: {
+      lesson_topic:
+        | "climate_change"
+        | "pollution"
+        | "waste"
+        | "energy"
+        | "water"
+        | "biodiversity"
       mission_category:
         | "planting"
         | "waste"
@@ -398,6 +506,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      lesson_topic: [
+        "climate_change",
+        "pollution",
+        "waste",
+        "energy",
+        "water",
+        "biodiversity",
+      ],
       mission_category: [
         "planting",
         "waste",
