@@ -139,7 +139,7 @@ export default function LessonReader() {
             dangerouslySetInnerHTML={{ 
               __html: lesson.body
                 .split('\n\n')
-                .map(p => `<p>${p}</p>`)
+                .map(p => `<p>${renderMarkdown(p)}</p>`)
                 .join('') 
             }}
           />
