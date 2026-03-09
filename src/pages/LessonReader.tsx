@@ -79,7 +79,7 @@ export default function LessonReader() {
     );
   }
 
-  const factBoxes = (lesson.fact_boxes as FactBox[]) || [];
+  const factBoxes = (lesson.fact_boxes as unknown as FactBox[]) || [];
 
   return (
     <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-6">
