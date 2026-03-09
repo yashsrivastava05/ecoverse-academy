@@ -8,8 +8,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 
 interface FactBox {
-  title: string;
-  content: string;
+  text?: string;
+  title?: string;
+  content?: string;
+}
+
+function renderMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
 }
 
 export default function LessonReader() {
@@ -132,7 +139,7 @@ export default function LessonReader() {
             dangerouslySetInnerHTML={{ 
               __html: lesson.body
                 .split('\n\n')
-                .map(p => `<p>${p}</p>`)
+                .map(p => `<p>${renderMarkdown(p)}</p>`)
                 .join('') 
             }}
           />
@@ -150,9 +157,9 @@ export default function LessonReader() {
                 className="bg-primary/5 border-l-4 border-primary rounded-r-lg p-4"
               >
                 <p className="font-heading font-bold text-sm text-primary mb-1">
-                  💡 {fact.title}
+                  💡 {fact.title || 'Did You Know?'}
                 </p>
-                <p className="text-sm text-foreground/80 italic">{fact.content}</p>
+                <p className="text-sm text-foreground/80 italic">{fact.text || fact.content || ''}</p>
               </motion.div>
             ))}
           </div>
