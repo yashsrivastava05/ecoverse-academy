@@ -84,7 +84,7 @@ export default function QuizExperience() {
     setSelectedAnswer(answer);
     setShowExplanation(true);
     
-    const isCorrect = answer.toLowerCase().trim() === questions[currentIdx].answer.toLowerCase().trim();
+    const isCorrect = normalizeAnswer(answer) === normalizeAnswer(questions[currentIdx].answer);
     if (isCorrect) {
       setScore(s => s + 1);
     }
