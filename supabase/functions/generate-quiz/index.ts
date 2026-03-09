@@ -29,15 +29,17 @@ serve(async (req) => {
       });
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -52,6 +54,18 @@ serve(async (req) => {
       });
     }
 
+    // Fetch lesson content for context
+    const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    const { data: lessons } = await adminClient
+      .from("lessons")
+      .select("title, summary, body")
+      .eq("topic", topic)
+      .order("order_index");
+
+    const articleContent = (lessons || [])
+      .map((l: any) => `Title: ${l.title}\nSummary: ${l.summary}\n${l.body}`)
+      .join("\n\n---\n\n");
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       return new Response(JSON.stringify({ error: "AI service not configured" }), {
@@ -61,16 +75,19 @@ serve(async (req) => {
     }
 
     const topicName = TOPIC_NAMES[topic];
-    const systemPrompt = `You are an expert environmental educator creating quiz questions for high school and college students learning about sustainability.`;
+    const systemPrompt = `You are an expert environmental educator creating quiz questions based on specific article content provided to you. Questions MUST be based on the provided content.`;
 
-    const userPrompt = `Generate a quiz about ${topicName} for students learning about environmental sustainability. Create exactly 7 questions with a mix of types: 3 multiple choice questions, 2 true/false questions, and 2 fill-in-the-blank questions.
+    const userPrompt = `Here is the article content about ${topicName}:
 
-For each question, provide:
-- A clear, educational question
-- The correct answer
-- A brief 1-2 sentence explanation of why the answer is correct
+${articleContent}
 
-Make questions factual, educational, and appropriate for the topic. Include interesting facts and statistics where relevant.`;
+Based ONLY on the above content, generate exactly 7 quiz questions: 3 multiple choice, 2 true/false, and 2 fill-in-the-blank.
+
+CRITICAL RULES:
+- For true_false questions, the answer MUST be exactly "True" or "False" (nothing else, no extra text)
+- For mcq questions, provide exactly 4 options and the answer must match one option exactly
+- For fill_blank questions, the answer should be a single word or short phrase
+- All questions must directly relate to facts from the provided article content`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -101,25 +118,18 @@ Make questions factual, educational, and appropriate for the topic. Include inte
                         type: {
                           type: "string",
                           enum: ["mcq", "true_false", "fill_blank"],
-                          description: "Question type",
                         },
-                        question: {
-                          type: "string",
-                          description: "The question text",
-                        },
+                        question: { type: "string" },
                         options: {
                           type: "array",
                           items: { type: "string" },
-                          description: "Answer options (4 for MCQ, ['True', 'False'] for true_false, null for fill_blank)",
+                          description: "4 options for MCQ, ['True', 'False'] for true_false, omit for fill_blank",
                         },
                         answer: {
                           type: "string",
-                          description: "The correct answer",
+                          description: "For true_false: exactly 'True' or 'False'. For mcq: exact match of one option.",
                         },
-                        explanation: {
-                          type: "string",
-                          description: "1-2 sentence explanation of why this answer is correct",
-                        },
+                        explanation: { type: "string" },
                       },
                       required: ["type", "question", "answer", "explanation"],
                       additionalProperties: false,
@@ -161,7 +171,7 @@ Make questions factual, educational, and appropriate for the topic. Include inte
 
     const aiResponse = await response.json();
     const toolCall = aiResponse.choices?.[0]?.message?.tool_calls?.[0];
-    
+
     if (!toolCall?.function?.arguments) {
       console.error("No tool call in response:", JSON.stringify(aiResponse));
       return new Response(JSON.stringify({ error: "Invalid AI response format" }), {
@@ -172,7 +182,19 @@ Make questions factual, educational, and appropriate for the topic. Include inte
 
     const quizData = JSON.parse(toolCall.function.arguments);
 
-    return new Response(JSON.stringify({ questions: quizData.questions }), {
+    // Normalize answers - especially true/false
+    const normalizedQuestions = quizData.questions.map((q: any) => {
+      if (q.type === "true_false") {
+        const lower = (q.answer || "").toLowerCase().trim();
+        q.answer = lower.startsWith("true") ? "True" : "False";
+        q.options = ["True", "False"];
+      }
+      // Trim all answers
+      q.answer = (q.answer || "").trim();
+      return q;
+    });
+
+    return new Response(JSON.stringify({ questions: normalizedQuestions }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

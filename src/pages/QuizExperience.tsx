@@ -16,6 +16,8 @@ interface QuizQuestion {
   explanation: string;
 }
 
+const normalizeAnswer = (a: string) => a.toLowerCase().trim();
+
 export default function QuizExperience() {
   const { topic } = useParams<{ topic: string }>();
   const navigate = useNavigate();
