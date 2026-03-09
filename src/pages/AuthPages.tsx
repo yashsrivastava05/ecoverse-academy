@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -20,12 +21,28 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     const { error } = await signIn(email, password);
-    setLoading(false);
     if (error) {
+      setLoading(false);
       toast({ title: 'Login failed', description: error.message, variant: 'destructive' });
+      return;
+    }
+    // Check role to determine redirect
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
+      const roleList = (roles ?? []).map(r => r.role);
+      if (roleList.includes('teacher') || roleList.includes('school_admin')) {
+        navigate('/teacher');
+      } else {
+        navigate('/dashboard');
+      }
     } else {
       navigate('/dashboard');
     }
+    setLoading(false);
   };
 
   return (
