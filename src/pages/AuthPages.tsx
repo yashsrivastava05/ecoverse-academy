@@ -146,6 +146,19 @@ export function SignupPage() {
               <Label htmlFor="school">School (optional)</Label>
               <Input id="school" placeholder="Your school name" value={form.school} onChange={e => setForm({ ...form, school: e.target.value })} className="rounded-xl" />
             </div>
+            <div className="space-y-2">
+              <Label>I am a</Label>
+              <Select value={form.role} onValueChange={v => setForm({ ...form, role: v })}>
+                <SelectTrigger className="rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="teacher">Teacher</SelectItem>
+                  <SelectItem value="school_admin">School Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <Button type="submit" className="w-full font-heading font-bold rounded-xl shadow-card" disabled={loading}>
               {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />} Create Account
             </Button>

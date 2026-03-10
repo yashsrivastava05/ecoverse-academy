@@ -157,12 +157,7 @@ export default function LessonReader() {
           
           <div 
             className="text-foreground/80 leading-relaxed space-y-4"
-            dangerouslySetInnerHTML={{ 
-              __html: lesson.body
-                .split('\n\n')
-                .map(p => `<p>${renderMarkdown(p)}</p>`)
-                .join('') 
-            }}
+            dangerouslySetInnerHTML={{ __html: renderMarkdownBlock(lesson.body) }}
           />
         </div>
 
