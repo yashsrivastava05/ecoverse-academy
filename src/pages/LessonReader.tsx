@@ -13,10 +13,31 @@ interface FactBox {
   content?: string;
 }
 
-function renderMarkdown(text: string): string {
+function renderInline(text: string): string {
   return text
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+}
+
+function renderMarkdownBlock(body: string): string {
+  const blocks = body.split('\n\n');
+  return blocks.map(block => {
+    const trimmed = block.trim();
+    if (!trimmed) return '';
+    // Headers
+    if (trimmed.startsWith('### ')) return `<h3 class="font-heading font-bold text-lg text-foreground mt-6 mb-2">${renderInline(trimmed.slice(4))}</h3>`;
+    if (trimmed.startsWith('## ')) return `<h2 class="font-heading font-bold text-xl text-foreground mt-6 mb-2">${renderInline(trimmed.slice(3))}</h2>`;
+    if (trimmed.startsWith('# ')) return `<h2 class="font-display font-bold text-2xl text-foreground mt-6 mb-3">${renderInline(trimmed.slice(2))}</h2>`;
+    // List blocks
+    const lines = trimmed.split('\n');
+    const isListBlock = lines.every(l => /^[\-\*]\s/.test(l.trim()));
+    if (isListBlock) {
+      const items = lines.map(l => `<li>${renderInline(l.trim().replace(/^[\-\*]\s/, ''))}</li>`).join('');
+      return `<ul class="list-disc pl-5 space-y-1 my-3">${items}</ul>`;
+    }
+    // Regular paragraph
+    return `<p>${renderInline(trimmed)}</p>`;
+  }).join('');
 }
 
 export default function LessonReader() {
