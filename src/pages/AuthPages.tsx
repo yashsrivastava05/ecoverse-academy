@@ -98,7 +98,7 @@ export function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await signUp(form.email, form.password, form.name);
+    const { error } = await signUp(form.email, form.password, form.name, form.role);
     setLoading(false);
     if (error) {
       toast({ title: 'Signup failed', description: error.message, variant: 'destructive' });
