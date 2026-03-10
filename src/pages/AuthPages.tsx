@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -91,13 +92,13 @@ export function SignupPage() {
   const navigate = useNavigate();
   const { signUp } = useAuth();
   const { toast } = useToast();
-  const [form, setForm] = useState({ name: '', email: '', password: '', school: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', school: '', role: 'student' });
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await signUp(form.email, form.password, form.name);
+    const { error } = await signUp(form.email, form.password, form.name, form.role);
     setLoading(false);
     if (error) {
       toast({ title: 'Signup failed', description: error.message, variant: 'destructive' });
@@ -144,6 +145,19 @@ export function SignupPage() {
             <div className="space-y-2">
               <Label htmlFor="school">School (optional)</Label>
               <Input id="school" placeholder="Your school name" value={form.school} onChange={e => setForm({ ...form, school: e.target.value })} className="rounded-xl" />
+            </div>
+            <div className="space-y-2">
+              <Label>I am a</Label>
+              <Select value={form.role} onValueChange={v => setForm({ ...form, role: v })}>
+                <SelectTrigger className="rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="teacher">Teacher</SelectItem>
+                  <SelectItem value="school_admin">School Admin</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <Button type="submit" className="w-full font-heading font-bold rounded-xl shadow-card" disabled={loading}>
               {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />} Create Account

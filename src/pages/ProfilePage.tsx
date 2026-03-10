@@ -245,10 +245,10 @@ export default function ProfilePage() {
       {/* ═══ SECTION 2: STATS ROW ═══ */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'ECOPOINTS', value: ecoCount.toLocaleString(), trend: `↑ +${data.weeklyPoints} this week`, borderColor: 'hsl(var(--jungle-bright))', bg: 'linear-gradient(135deg, #ffffff 60%, #f0fdf4 100%)' },
-          { label: 'MISSIONS DONE', value: String(missionsCount), trend: `${data.monthlyMissions} this month`, borderColor: 'hsl(var(--sky-blue))', bg: 'linear-gradient(135deg, #ffffff 60%, #eff6ff 100%)' },
-          { label: 'DAY STREAK', value: String(streakCount), trend: `🏆 Best: ${profile.streak_days} days`, borderColor: 'hsl(var(--sun-gold))', bg: 'linear-gradient(135deg, #ffffff 60%, #fff7ed 100%)' },
-          { label: 'BADGES', value: `${badgesCount}`, trend: `${badgesEarned} of 12 unlocked`, borderColor: 'hsl(var(--lavender))', bg: 'linear-gradient(135deg, #ffffff 60%, #f5f3ff 100%)' },
+          { label: 'ECOPOINTS', value: ecoCount.toLocaleString(), trend: `↑ +${data.weeklyPoints} this week`, borderColor: '#40916C', bg: 'linear-gradient(135deg, rgba(64,145,108,0.08) 0%, #ffffff 100%)' },
+          { label: 'MISSIONS DONE', value: String(missionsCount), trend: `${data.monthlyMissions} this month`, borderColor: '#48CAE4', bg: 'linear-gradient(135deg, rgba(72,202,228,0.08) 0%, #ffffff 100%)' },
+          { label: 'DAY STREAK', value: String(streakCount), trend: `🏆 Best: ${profile.streak_days} days`, borderColor: '#F4A261', bg: 'linear-gradient(135deg, rgba(244,162,97,0.08) 0%, #ffffff 100%)' },
+          { label: 'BADGES', value: `${badgesCount}`, trend: `${badgesEarned} of 12 unlocked`, borderColor: '#B197FC', bg: 'linear-gradient(135deg, rgba(177,151,252,0.08) 0%, #ffffff 100%)' },
         ].map((s, i) => (
           <motion.div
             key={i}
@@ -271,7 +271,13 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 md:grid-cols-[55%_45%] gap-5">
           {/* Left — Scene */}
           <div>
-            <div className="rounded-2xl bg-bg-dark-panel p-3 shadow-[var(--shadow-float)] overflow-hidden">
+            <div className="rounded-2xl bg-bg-dark-panel p-4 shadow-float overflow-hidden relative">
+              {[0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5].map((delay, i) => (
+                <div key={i} className="absolute w-1 h-1 rounded-full animate-firefly z-10"
+                  style={{ background: '#FFE566', boxShadow: '0 0 6px 3px rgba(255,229,102,0.75)', top: `${15 + (i * 11) % 55}%`, left: `${10 + (i * 13) % 75}%`, animationDelay: `${delay}s`, animationDuration: `${1.8 + (i % 4) * 0.4}s` }} />
+              ))}
+              <span className="absolute text-sm pointer-events-none z-10 animate-leaf-drift-1" style={{ left: '25%', top: '-5%' }}>🍃</span>
+              <span className="absolute text-sm pointer-events-none z-10 animate-leaf-drift-2" style={{ left: '65%', top: '-5%' }}>🍃</span>
               <EcosystemViewer ecoPoints={profile.eco_points} className="aspect-[2/1]" />
             </div>
             <p className="font-display font-extrabold text-foreground mt-3">{profile.full_name.split(' ')[0]}'s Forest</p>
