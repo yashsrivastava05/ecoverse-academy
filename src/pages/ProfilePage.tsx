@@ -245,10 +245,10 @@ export default function ProfilePage() {
       {/* ═══ SECTION 2: STATS ROW ═══ */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'ECOPOINTS', value: ecoCount.toLocaleString(), trend: `↑ +${data.weeklyPoints} this week`, borderColor: 'hsl(var(--jungle-bright))', bg: 'linear-gradient(135deg, #ffffff 60%, #f0fdf4 100%)' },
-          { label: 'MISSIONS DONE', value: String(missionsCount), trend: `${data.monthlyMissions} this month`, borderColor: 'hsl(var(--sky-blue))', bg: 'linear-gradient(135deg, #ffffff 60%, #eff6ff 100%)' },
-          { label: 'DAY STREAK', value: String(streakCount), trend: `🏆 Best: ${profile.streak_days} days`, borderColor: 'hsl(var(--sun-gold))', bg: 'linear-gradient(135deg, #ffffff 60%, #fff7ed 100%)' },
-          { label: 'BADGES', value: `${badgesCount}`, trend: `${badgesEarned} of 12 unlocked`, borderColor: 'hsl(var(--lavender))', bg: 'linear-gradient(135deg, #ffffff 60%, #f5f3ff 100%)' },
+          { label: 'ECOPOINTS', value: ecoCount.toLocaleString(), trend: `↑ +${data.weeklyPoints} this week`, borderColor: '#40916C', bg: 'linear-gradient(135deg, rgba(64,145,108,0.08) 0%, #ffffff 100%)' },
+          { label: 'MISSIONS DONE', value: String(missionsCount), trend: `${data.monthlyMissions} this month`, borderColor: '#48CAE4', bg: 'linear-gradient(135deg, rgba(72,202,228,0.08) 0%, #ffffff 100%)' },
+          { label: 'DAY STREAK', value: String(streakCount), trend: `🏆 Best: ${profile.streak_days} days`, borderColor: '#F4A261', bg: 'linear-gradient(135deg, rgba(244,162,97,0.08) 0%, #ffffff 100%)' },
+          { label: 'BADGES', value: `${badgesCount}`, trend: `${badgesEarned} of 12 unlocked`, borderColor: '#B197FC', bg: 'linear-gradient(135deg, rgba(177,151,252,0.08) 0%, #ffffff 100%)' },
         ].map((s, i) => (
           <motion.div
             key={i}
