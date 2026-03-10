@@ -92,7 +92,7 @@ export function SignupPage() {
   const navigate = useNavigate();
   const { signUp } = useAuth();
   const { toast } = useToast();
-  const [form, setForm] = useState({ name: '', email: '', password: '', school: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', school: '', role: 'student' });
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
