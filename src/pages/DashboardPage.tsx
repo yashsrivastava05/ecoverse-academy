@@ -262,7 +262,7 @@ export default function DashboardPage() {
 
             <div className="mt-4 px-2 pb-2">
               <div className="flex items-center justify-between mb-1">
-                <h2 className="font-heading font-extrabold text-base text-bg-elevated">🌳 {firstName}'s Forest</h2>
+                <h2 className="font-heading font-extrabold text-base text-bg-elevated">🌳 {profile.full_name}'s Forest</h2>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-jungle-mid/30 px-3 py-1 text-xs font-heading font-bold text-jungle-pale">
                   🌿 {levelInfo.title} · Lv {levelInfo.level}
                 </span>
