@@ -280,7 +280,7 @@ export default function ProfilePage() {
               <span className="absolute text-sm pointer-events-none z-10 animate-leaf-drift-2" style={{ left: '65%', top: '-5%' }}>🍃</span>
               <EcosystemViewer ecoPoints={profile.eco_points} className="aspect-[2/1]" />
             </div>
-            <p className="font-display font-extrabold text-foreground mt-3">{profile.full_name.split(' ')[0]}'s Forest</p>
+            <p className="font-display font-extrabold text-foreground mt-3">{profile.full_name}'s Forest</p>
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-heading font-bold mt-1" style={{ background: 'hsl(var(--jungle-pale))', color: 'hsl(var(--foreground))' }}>
               {levelInfo.title} · Lv {levelInfo.level}
             </span>
