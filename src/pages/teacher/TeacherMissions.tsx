@@ -41,7 +41,14 @@ export default function TeacherMissions() {
     expires_at: '',
   });
 
-  const allMissions = missions.filter(m => !m.created_by);
+  // All Missions tab: show everything, custom at top
+  const allMissionsSorted = [...missions].sort((a, b) => {
+    const aCustom = !!a.created_by;
+    const bCustom = !!b.created_by;
+    if (aCustom && !bCustom) return -1;
+    if (!aCustom && bCustom) return 1;
+    return 0;
+  });
   const customMissions = missions.filter(m => m.created_by === user?.id);
 
   const handleCreate = () => {
