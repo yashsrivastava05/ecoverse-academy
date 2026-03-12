@@ -60,7 +60,7 @@ export default function TeacherMissions() {
     setForm({ title: '', description: '', category: 'planting', difficulty: 'easy', eco_points_reward: 50, requires_photo: true, requires_location: false, school_only: true, expires_at: '' });
   };
 
-  const displayed = tab === 'all' ? allMissions : customMissions;
+  const displayed = tab === 'all' ? allMissionsSorted : customMissions;
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6">
