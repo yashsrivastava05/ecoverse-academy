@@ -144,14 +144,14 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
             </AnimatePresence>
           </div>
 
-          <Link to="/teacher/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <div className="flex items-center gap-2">
             <span className="w-8 h-8 rounded-full bg-jungle-pale border-2 border-jungle-light flex items-center justify-center text-sm">
               {profile?.avatar_emoji || '🌿'}
             </span>
             {!isMobile && (
               <span className="text-sm font-heading font-semibold text-foreground">{profile?.full_name || 'Teacher'}</span>
             )}
-          </Link>
+          </div>
           <button onClick={handleSignOut} className="p-2 rounded-lg hover:bg-muted transition-colors" title="Sign out">
             <LogOut className="w-4 h-4 text-muted-foreground" />
           </button>

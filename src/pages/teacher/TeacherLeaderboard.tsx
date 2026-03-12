@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTeacherData } from '@/hooks/useTeacherData';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
 
 const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
 
@@ -10,43 +9,8 @@ export default function TeacherLeaderboard() {
   const { students, submissions } = useTeacherData();
   const [period, setPeriod] = useState<'week' | 'month' | 'all'>('all');
 
-  // Fetch approved submissions with points for time-based filtering
-  const { data: approvedSubs = [] } = useQuery({
-    queryKey: ['teacher-leaderboard-subs'],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('mission_submissions')
-        .select('user_id, reviewed_at, missions(eco_points_reward)')
-        .eq('status', 'approved');
-      return data ?? [];
-    },
-  });
-
-  // Calculate points per student based on period
-  const getPointsForPeriod = (userId: string): number => {
-    if (period === 'all') {
-      return students.find(s => s.id === userId)?.eco_points ?? 0;
-    }
-
-    const now = new Date();
-    let cutoff: Date;
-    if (period === 'week') {
-      cutoff = new Date(now);
-      cutoff.setDate(cutoff.getDate() - 7);
-    } else {
-      cutoff = new Date(now.getFullYear(), now.getMonth(), 1);
-    }
-
-    return approvedSubs
-      .filter(s => s.user_id === userId && s.reviewed_at && new Date(s.reviewed_at) >= cutoff)
-      .reduce((sum, s) => sum + ((s.missions as any)?.eco_points_reward ?? 0), 0);
-  };
-
-  // Sort students by points for selected period
-  const sorted = [...students]
-    .map(s => ({ ...s, periodPoints: getPointsForPeriod(s.id) }))
-    .sort((a, b) => b.periodPoints - a.periodPoints);
-
+  // Sort students by eco_points
+  const sorted = [...students].sort((a, b) => b.eco_points - a.eco_points);
   const top3 = sorted.slice(0, 3);
   const rest = sorted.slice(3);
 
@@ -65,7 +29,7 @@ export default function TeacherLeaderboard() {
             key={p}
             onClick={() => setPeriod(p)}
             className={`px-4 py-2 rounded-full text-sm font-heading font-semibold transition-all ${
-              period === p ? 'bg-jungle-bright text-white shadow-card' : 'bg-card border border-border text-muted-foreground'
+              period === p ? 'bg-primary text-primary-foreground shadow-card' : 'bg-card border border-border text-muted-foreground'
             }`}
           >
             {p === 'week' ? 'This Week' : p === 'month' ? 'This Month' : 'All Time'}
@@ -94,7 +58,7 @@ export default function TeacherLeaderboard() {
                   {student.avatar_emoji}
                 </div>
                 <p className="text-sm font-heading font-bold text-foreground text-center max-w-[100px] truncate mt-2">{student.full_name}</p>
-                <p className="text-xs text-jungle-bright font-mono-stat font-bold">{student.periodPoints.toLocaleString()}</p>
+                <p className="text-xs text-jungle-bright font-mono-stat font-bold">{student.eco_points.toLocaleString()}</p>
                 <div className={`w-24 ${heights[pos as keyof typeof heights]} mt-2 rounded-t-2xl bg-gradient-to-t ${
                   pos === 1 ? 'from-sun-gold/40 to-sun-gold/10 border-sun-gold/50' :
                   pos === 2 ? 'from-muted/50 to-muted/20 border-muted-foreground/30' :
@@ -127,7 +91,7 @@ export default function TeacherLeaderboard() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-sm font-mono-stat font-bold text-jungle-bright">{student.periodPoints.toLocaleString()}</span>
+              <span className="text-sm font-mono-stat font-bold text-jungle-bright">{student.eco_points.toLocaleString()}</span>
               <span className="text-xs text-muted-foreground">🔥 {student.streak_days}d</span>
             </div>
           </motion.div>

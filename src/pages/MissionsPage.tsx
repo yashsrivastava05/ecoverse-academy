@@ -4,8 +4,6 @@ import { MOCK_MISSIONS, CATEGORY_INFO } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Leaf, MapPin, Camera, X, Sparkles, ArrowRight, Filter, UserCheck } from 'lucide-react';
 import type { Mission, Difficulty } from '@/lib/types';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 
 const CATEGORY_GRADIENTS: Record<string, string> = {
   planting: 'from-jungle-bright to-jungle-mid',
@@ -105,46 +103,8 @@ export default function MissionsPage() {
   const [difficulty, setDifficulty] = useState<string>('all');
   const [selected, setSelected] = useState<Mission | null>(null);
   const categories = ['all', ...Object.keys(CATEGORY_INFO)];
-
-  // Fetch custom (teacher-created) missions from DB
-  const { data: dbMissions = [] } = useQuery({
-    queryKey: ['student-db-missions'],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('missions')
-        .select('*')
-        .eq('is_active', true)
-        .not('created_by', 'is', null)
-        .order('created_at', { ascending: false });
-      return data ?? [];
-    },
-  });
-
-  // Convert DB missions to Mission type and mark as custom
-  const customMissions: (Mission & { isCustom: boolean })[] = dbMissions.map(m => ({
-    id: m.id,
-    title: m.title,
-    description: m.description,
-    category: m.category as Mission['category'],
-    difficulty: m.difficulty as Mission['difficulty'],
-    eco_points_reward: m.eco_points_reward,
-    xp_reward: m.xp_reward,
-    requires_photo: m.requires_photo,
-    requires_location: m.requires_location,
-    requires_teacher_approval: true,
-    icon_url: m.icon,
-    steps: m.steps ?? undefined,
-    isCustom: true,
-  }));
-
-  // Combine: custom missions first, then mock missions (avoid duplicates by id)
-  const customIds = new Set(customMissions.map(m => m.id));
-  const allMissions: (Mission & { isCustom?: boolean })[] = [
-    ...customMissions,
-    ...MOCK_MISSIONS.filter(m => !customIds.has(m.id)).map(m => ({ ...m, isCustom: false })),
-  ];
   
-  const filtered = allMissions.filter(m => {
+  const filtered = MOCK_MISSIONS.filter(m => {
     if (category !== 'all' && m.category !== category) return false;
     if (difficulty !== 'all' && m.difficulty !== difficulty) return false;
     return true;
@@ -166,7 +126,7 @@ export default function MissionsPage() {
               Your Eco Quests
             </h1>
             <p className="text-sm mt-1" style={{ color: 'hsl(var(--jungle-light))' }}>
-              Complete missions to grow your ecosystem · <span className="font-mono-stat">{allMissions.length}</span> missions available
+              Complete missions to grow your ecosystem · <span className="font-mono-stat">{MOCK_MISSIONS.length}</span> missions available
             </p>
           </div>
           <div className="hidden md:flex items-center gap-2 bg-lavender/20 text-lavender rounded-full px-3 py-1.5 text-sm font-heading font-bold">
@@ -255,11 +215,6 @@ export default function MissionsPage() {
                 <span className={`absolute top-3 right-3 text-xs px-2 py-0.5 rounded-full font-heading font-bold bg-card/90 ${
                   m.difficulty === 'easy' ? 'text-jungle-bright' : m.difficulty === 'medium' ? 'text-sun-gold' : 'text-coral'
                 }`}>{m.difficulty}</span>
-                {(m as any).isCustom && (
-                  <span className="absolute top-3 left-3 text-xs px-2.5 py-1 rounded-full font-heading font-bold text-white" style={{ backgroundColor: '#F4A261' }}>
-                    Class Mission
-                  </span>
-                )}
               </div>
               <div className="p-4">
                 <h3 className="font-heading font-bold text-foreground mb-1">{m.title}</h3>

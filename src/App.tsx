@@ -24,7 +24,6 @@ import TeacherSubmissions from "./pages/teacher/TeacherSubmissions";
 import TeacherStudents from "./pages/teacher/TeacherStudents";
 import TeacherMissions from "./pages/teacher/TeacherMissions";
 import TeacherLeaderboard from "./pages/teacher/TeacherLeaderboard";
-import TeacherProfile from "./pages/teacher/TeacherProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,7 +54,6 @@ const App = () => (
             <Route path="/teacher/students" element={<TeacherRoute><TeacherLayout><TeacherStudents /></TeacherLayout></TeacherRoute>} />
             <Route path="/teacher/missions" element={<TeacherRoute><TeacherLayout><TeacherMissions /></TeacherLayout></TeacherRoute>} />
             <Route path="/teacher/leaderboard" element={<TeacherRoute><TeacherLayout><TeacherLeaderboard /></TeacherLayout></TeacherRoute>} />
-            <Route path="/teacher/profile" element={<TeacherRoute><TeacherLayout><TeacherProfile /></TeacherLayout></TeacherRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
