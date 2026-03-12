@@ -24,6 +24,7 @@ import TeacherSubmissions from "./pages/teacher/TeacherSubmissions";
 import TeacherStudents from "./pages/teacher/TeacherStudents";
 import TeacherMissions from "./pages/teacher/TeacherMissions";
 import TeacherLeaderboard from "./pages/teacher/TeacherLeaderboard";
+import TeacherProfile from "./pages/teacher/TeacherProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
