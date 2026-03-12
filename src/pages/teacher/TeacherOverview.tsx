@@ -76,7 +76,7 @@ export default function TeacherOverview() {
       <motion.div variants={fadeUp} className="flex items-start justify-between flex-wrap gap-4">
         <div>
           <h1 className="font-display font-bold text-3xl text-jungle-deep">
-            {getGreeting()}, {profile?.full_name?.split(' ')[0] ?? 'Teacher'}! 👋
+            {getGreeting()}, {profile?.full_name ?? 'Teacher'}! 👋
           </h1>
           <p className="text-muted-foreground mt-1">
             {profile?.school_name || 'EcoQuest'} {profile?.city ? `· ${profile.city}` : ''}

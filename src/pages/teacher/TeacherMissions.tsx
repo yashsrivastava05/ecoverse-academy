@@ -107,7 +107,14 @@ export default function TeacherMissions() {
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{m.icon}</span>
                   <div>
-                    <p className="font-heading font-bold text-foreground">{m.title}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-heading font-bold text-foreground">{m.title}</p>
+                      {m.created_by && (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-heading font-bold text-white" style={{ backgroundColor: '#F4A261' }}>
+                          Class Mission
+                        </span>
+                      )}
+                    </div>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-heading font-bold ${
                       m.difficulty === 'easy' ? 'bg-jungle-pale text-jungle-bright' :
                       m.difficulty === 'medium' ? 'bg-sun-gold/10 text-sun-gold' :
