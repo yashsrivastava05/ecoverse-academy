@@ -41,7 +41,14 @@ export default function TeacherMissions() {
     expires_at: '',
   });
 
-  const allMissions = missions.filter(m => !m.created_by);
+  // All Missions tab: show everything, custom at top
+  const allMissionsSorted = [...missions].sort((a, b) => {
+    const aCustom = !!a.created_by;
+    const bCustom = !!b.created_by;
+    if (aCustom && !bCustom) return -1;
+    if (!aCustom && bCustom) return 1;
+    return 0;
+  });
   const customMissions = missions.filter(m => m.created_by === user?.id);
 
   const handleCreate = () => {
@@ -53,7 +60,7 @@ export default function TeacherMissions() {
     setForm({ title: '', description: '', category: 'planting', difficulty: 'easy', eco_points_reward: 50, requires_photo: true, requires_location: false, school_only: true, expires_at: '' });
   };
 
-  const displayed = tab === 'all' ? allMissions : customMissions;
+  const displayed = tab === 'all' ? allMissionsSorted : customMissions;
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-6">
@@ -100,7 +107,14 @@ export default function TeacherMissions() {
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{m.icon}</span>
                   <div>
-                    <p className="font-heading font-bold text-foreground">{m.title}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-heading font-bold text-foreground">{m.title}</p>
+                      {m.created_by && (
+                        <span className="text-xs px-2 py-0.5 rounded-full font-heading font-bold text-white" style={{ backgroundColor: '#F4A261' }}>
+                          Class Mission
+                        </span>
+                      )}
+                    </div>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-heading font-bold ${
                       m.difficulty === 'easy' ? 'bg-jungle-pale text-jungle-bright' :
                       m.difficulty === 'medium' ? 'bg-sun-gold/10 text-sun-gold' :
