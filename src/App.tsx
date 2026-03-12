@@ -55,6 +55,7 @@ const App = () => (
             <Route path="/teacher/students" element={<TeacherRoute><TeacherLayout><TeacherStudents /></TeacherLayout></TeacherRoute>} />
             <Route path="/teacher/missions" element={<TeacherRoute><TeacherLayout><TeacherMissions /></TeacherLayout></TeacherRoute>} />
             <Route path="/teacher/leaderboard" element={<TeacherRoute><TeacherLayout><TeacherLeaderboard /></TeacherLayout></TeacherRoute>} />
+            <Route path="/teacher/profile" element={<TeacherRoute><TeacherLayout><TeacherProfile /></TeacherLayout></TeacherRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
