@@ -366,7 +366,6 @@ export type Database = {
           isSetofReturn: true
         }
       }
-      get_non_student_user_ids: { Args: never; Returns: string[] }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -55,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .select('role')
       .eq('user_id', userId);
     if (data && data.length > 0) {
+      // Prioritize teacher > school_admin > student
       const roles = data.map(r => r.role as AppRole);
       if (roles.includes('teacher')) setRole('teacher');
       else if (roles.includes('school_admin')) setRole('school_admin');
@@ -64,63 +65,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const loadUserData = async (userId: string) => {
-    await Promise.all([fetchProfile(userId), fetchRole(userId)]);
-  };
-
   const refreshProfile = async () => {
     if (user) {
-      await loadUserData(user.id);
+      await fetchProfile(user.id);
+      await fetchRole(user.id);
     }
   };
 
   useEffect(() => {
-    // Safety timeout — force loading false after 5s to prevent infinite spinner
-    const safetyTimeout = setTimeout(() => {
-      setLoading(false);
-    }, 5000);
-
-    let initialSessionHandled = false;
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        try {
-          setSession(session);
-          setUser(session?.user ?? null);
-          if (session?.user) {
-            await loadUserData(session.user.id);
-          } else {
-            setProfile(null);
-            setRole(null);
-          }
-        } catch (err) {
-          console.error('Auth state change error:', err);
-        } finally {
-          setLoading(false);
-        }
-      }
-    );
-
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      try {
-        if (initialSessionHandled) return;
-        initialSessionHandled = true;
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          await loadUserData(session.user.id);
+          setTimeout(() => {
+            fetchProfile(session.user.id);
+            fetchRole(session.user.id);
+          }, 0);
+        } else {
+          setProfile(null);
+          setRole(null);
         }
-      } catch (err) {
-        console.error('Get session error:', err);
-      } finally {
         setLoading(false);
       }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+        fetchRole(session.user.id);
+      }
+      setLoading(false);
     });
 
-    return () => {
-      clearTimeout(safetyTimeout);
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string, role?: string) => {

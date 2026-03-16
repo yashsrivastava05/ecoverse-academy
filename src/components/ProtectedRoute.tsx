@@ -2,7 +2,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading, isTeacher } = useAuth();
+  const { user, loading } = useAuth();
   
   if (loading) {
     return (
@@ -16,6 +16,5 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   }
   
   if (!user) return <Navigate to="/login" replace />;
-  if (isTeacher) return <Navigate to="/teacher" replace />;
   return <>{children}</>;
 }
