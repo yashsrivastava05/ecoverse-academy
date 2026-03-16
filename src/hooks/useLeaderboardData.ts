@@ -38,7 +38,13 @@ function getStartOfMonth(): string {
   return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
 }
 
-async function fetchAllTimeLeaderboard(schoolFilter?: string) {
+async function fetchExcludedUserIds(): Promise<string[]> {
+  const { data, error } = await supabase.rpc('get_non_student_user_ids');
+  if (error || !data) return [];
+  return data as string[];
+}
+
+async function fetchAllTimeLeaderboard(schoolFilter?: string, excludeIds?: string[]) {
   let query = supabase
     .from('profiles')
     .select('id, full_name, avatar_emoji, school_name, eco_points, streak_days')
@@ -51,7 +57,8 @@ async function fetchAllTimeLeaderboard(schoolFilter?: string) {
 
   const { data, error } = await query;
   if (error) throw error;
-  return (data ?? []).map(p => ({
+
+  let results = (data ?? []).map(p => ({
     user_id: p.id,
     full_name: p.full_name,
     avatar_emoji: p.avatar_emoji,
@@ -59,12 +66,18 @@ async function fetchAllTimeLeaderboard(schoolFilter?: string) {
     eco_points: p.eco_points,
     streak_days: p.streak_days,
   }));
+
+  if (excludeIds && excludeIds.length > 0) {
+    const excludeSet = new Set(excludeIds);
+    results = results.filter(r => !excludeSet.has(r.user_id));
+  }
+
+  return results;
 }
 
-async function fetchTimePeriodLeaderboard(period: 'this_week' | 'this_month', schoolFilter?: string) {
+async function fetchTimePeriodLeaderboard(period: 'this_week' | 'this_month', schoolFilter?: string, excludeIds?: string[]) {
   const startDate = period === 'this_week' ? getStartOfWeek() : getStartOfMonth();
 
-  // Get aggregated daily_points
   const { data: pointsData, error: pointsError } = await supabase
     .from('daily_points')
     .select('user_id, points_earned')
@@ -72,15 +85,15 @@ async function fetchTimePeriodLeaderboard(period: 'this_week' | 'this_month', sc
 
   if (pointsError) throw pointsError;
 
-  // Aggregate by user
   const userPoints = new Map<string, number>();
+  const excludeSet = new Set(excludeIds ?? []);
   for (const row of pointsData ?? []) {
+    if (excludeSet.has(row.user_id)) continue;
     userPoints.set(row.user_id, (userPoints.get(row.user_id) ?? 0) + row.points_earned);
   }
 
   if (userPoints.size === 0) return [];
 
-  // Fetch profiles for these users
   const userIds = Array.from(userPoints.keys());
   let query = supabase
     .from('profiles')
@@ -130,7 +143,7 @@ export function useLeaderboardData(
   injectBots: boolean = true
 ) {
   const { user, profile } = useAuth();
-  const schoolName = profile?.school_name ?? '';
+  const schoolName = profile?.school_name || undefined;
 
   const schoolFilter = scope === 'my_school' ? schoolName : undefined;
   const shouldInjectBots = injectBots && scope === 'global';
@@ -138,12 +151,14 @@ export function useLeaderboardData(
   return useQuery({
     queryKey: ['leaderboard', period, scope, schoolFilter, shouldInjectBots],
     queryFn: async () => {
+      const excludeIds = await fetchExcludedUserIds();
+
       let raw: Omit<LeaderboardEntry, 'rank' | 'level_title'>[];
 
       if (period === 'all_time') {
-        raw = await fetchAllTimeLeaderboard(schoolFilter);
+        raw = await fetchAllTimeLeaderboard(schoolFilter, excludeIds);
       } else {
-        raw = await fetchTimePeriodLeaderboard(period, schoolFilter);
+        raw = await fetchTimePeriodLeaderboard(period, schoolFilter, excludeIds);
       }
 
       const ranked = rankEntries(raw, shouldInjectBots);
@@ -160,12 +175,11 @@ export function useLeaderboardData(
 
 export function useTeacherLeaderboardData(period: TimePeriod) {
   const { profile } = useAuth();
-  const schoolName = profile?.school_name ?? '';
+  const schoolName = profile?.school_name || undefined;
 
   return useQuery({
     queryKey: ['teacher-leaderboard', period, schoolName],
     queryFn: async () => {
-      // Get student role user_ids
       const { data: studentRoles } = await supabase
         .from('user_roles')
         .select('user_id')
@@ -180,7 +194,7 @@ export function useTeacherLeaderboardData(period: TimePeriod) {
         const { data } = await supabase
           .from('profiles')
           .select('id, full_name, avatar_emoji, school_name, eco_points, streak_days')
-          .eq('school_name', schoolName)
+          .eq('school_name', schoolName!)
           .in('id', studentIds)
           .order('eco_points', { ascending: false })
           .limit(50);
@@ -212,7 +226,7 @@ export function useTeacherLeaderboardData(period: TimePeriod) {
         const { data: profiles } = await supabase
           .from('profiles')
           .select('id, full_name, avatar_emoji, school_name, eco_points, streak_days')
-          .eq('school_name', schoolName)
+          .eq('school_name', schoolName!)
           .in('id', uids);
 
         raw = (profiles ?? [])
