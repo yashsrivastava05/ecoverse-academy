@@ -55,7 +55,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .select('role')
       .eq('user_id', userId);
     if (data && data.length > 0) {
-      // Prioritize teacher > school_admin > student
       const roles = data.map(r => r.role as AppRole);
       if (roles.includes('teacher')) setRole('teacher');
       else if (roles.includes('school_admin')) setRole('school_admin');
@@ -65,10 +64,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loadUserData = async (userId: string) => {
+    await Promise.all([fetchProfile(userId), fetchRole(userId)]);
+  };
+
   const refreshProfile = async () => {
     if (user) {
-      await fetchProfile(user.id);
-      await fetchRole(user.id);
+      await loadUserData(user.id);
     }
   };
 
@@ -78,10 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => {
-            fetchProfile(session.user.id);
-            fetchRole(session.user.id);
-          }, 0);
+          await loadUserData(session.user.id);
         } else {
           setProfile(null);
           setRole(null);
@@ -90,12 +89,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
-        fetchRole(session.user.id);
+        await loadUserData(session.user.id);
       }
       setLoading(false);
     });

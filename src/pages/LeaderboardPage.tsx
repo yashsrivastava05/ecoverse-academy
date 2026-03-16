@@ -59,7 +59,12 @@ export default function LeaderboardPage() {
         </div>
       </motion.div>
 
-      {isLoading ? (
+      {scope === 'my_school' && !profile?.school_name ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <p className="text-lg mb-2">🏫</p>
+          <p>Add your school name in Profile settings to see your school's leaderboard.</p>
+        </div>
+      ) : isLoading ? (
         <div className="text-center py-12 text-muted-foreground">Loading leaderboard...</div>
       ) : (
         <>
