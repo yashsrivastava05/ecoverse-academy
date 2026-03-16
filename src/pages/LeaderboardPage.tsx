@@ -9,7 +9,7 @@ const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.05 } }
 const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
 
 export default function LeaderboardPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [scope, setScope] = useState<LeaderboardScope>('global');
   const [period, setPeriod] = useState<TimePeriod>('all_time');
 
